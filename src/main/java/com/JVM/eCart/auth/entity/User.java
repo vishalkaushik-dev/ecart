@@ -1,5 +1,6 @@
 package com.JVM.eCart.auth.entity;
 
+import com.JVM.eCart.customer.entity.Customer;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.validator.constraints.UUID;
@@ -19,8 +20,6 @@ public class User {
 
     @Column(unique = true)
     private String email;
-
-    private String phoneNumber;
 
     private String password;
 
@@ -48,4 +47,10 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Customer customer;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Seller seller;
 }

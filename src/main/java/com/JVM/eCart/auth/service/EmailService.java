@@ -80,4 +80,14 @@ public class EmailService {
 
         System.out.println("Password update confirmation email sent to: " + email);
     }
+
+    @Async
+    public void sendMail(String email, String subject, String mailContent) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject(subject);
+        message.setText(mailContent);
+        mailSender.send(message);
+    }
 }

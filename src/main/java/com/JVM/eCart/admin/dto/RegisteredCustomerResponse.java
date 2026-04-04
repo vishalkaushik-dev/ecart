@@ -4,5 +4,5 @@ public record RegisteredCustomerResponse(
         Long id,
         String fullName,
         String email,
-        boolean isActive
+        Boolean isActive
 ) { }

@@ -1,6 +1,7 @@
 package com.JVM.eCart.user.repository;
 
 import com.JVM.eCart.admin.dto.RegisteredCustomerResponse;
+import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
 import com.JVM.eCart.auth.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,12 +22,41 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("""
     SELECT new com.JVM.eCart.admin.dto.RegisteredCustomerResponse(
         u.id,
-        CONCAT(u.firstName, ' ', u.lastName),
+        (u.firstName || ' ' || u.lastName),
         u.email,
         u.isActive
     )
     FROM User u
-    WHERE (:email IS NULL OR u.email LIKE CONCAT('%', :email, '%'))
-    """)
-    Page<RegisteredCustomerResponse> findRegisteredCustomers(@Param("email") String email, Pageable pageable);
+    JOIN u.roles r
+    WHERE LOWER(r.authority) = LOWER(:role)
+    AND LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))
+""")
+    Page<RegisteredCustomerResponse> findRegisteredCustomers(
+            @Param("role") String role,
+            @Param("email") String email,
+            Pageable pageable
+    );
+
+    @Query(
+            """
+                    SELECT new com.JVM.eCart.admin.dto.RegisteredSellerResponse(
+                        u.id,
+                        CONCAT(u.firstName, ' ', u.lastName),
+                        u.email,
+                        u.isActive,
+                        s.companyName,
+                        s.companyAddress,
+                        s.companyContact
+                    ) FROM User u
+                    JOIN u.roles r
+                    JOIN Seller s ON s.user = u
+                    WHERE LOWER(r.authority) = LOWER(:role)
+                    AND LOWER(u.email) LIKE LOWER(CONCAT('%', :email, '%'))
+            """
+    )
+    Page<RegisteredSellerResponse> findRegisteredSellers(
+            @Param("role") String role,
+            @Param("email") String email,
+            Pageable pageable
+    );
 }
