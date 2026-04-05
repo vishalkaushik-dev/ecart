@@ -182,6 +182,12 @@ public class AuthServiceImpl implements  IAuthService {
         user.setPasswordUpdateDate(LocalDateTime.now());
         userRepository.save(user);
 
+        // Add address in address table
+        Address address = new Address();
+        BeanUtils.copyProperties(sellerRegisterRequest, address);
+        address.setUser(user);
+        addressRepository.save(address);
+
         Seller seller = new Seller();
         BeanUtils.copyProperties(sellerRegisterRequest, seller);
         seller.setUser(user);

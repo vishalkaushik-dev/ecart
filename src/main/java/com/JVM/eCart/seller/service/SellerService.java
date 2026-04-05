@@ -33,6 +33,7 @@ public class SellerService {
                         addr.getCity(),
                         addr.getState(),
                         addr.getCountry(),
+                        addr.getLabel(),
                         addr.getZipCode()
                 ))
                 .toList();

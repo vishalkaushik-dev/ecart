@@ -16,6 +16,7 @@ public class Address {
     private String state;
     private String country;
     private String zipCode;
+    private String label;
 
     @ManyToOne
     @JoinColumn(name = "user_id") // FK column

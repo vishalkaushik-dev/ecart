@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/seller")
+@RequestMapping("/sellers")
 @AllArgsConstructor
 public class SellerController {
 
@@ -28,7 +28,7 @@ public class SellerController {
         return ResponseEntity.ok(userService.updateSellerProfile(request));
     }
 
-    @PatchMapping("/password")
+    @PatchMapping("/update-password")
     public ResponseEntity<?> changePassword(@Valid @RequestBody UpdatePasswordRequest request) {
         return ResponseEntity.ok(userService.updatePassword(request));
     }

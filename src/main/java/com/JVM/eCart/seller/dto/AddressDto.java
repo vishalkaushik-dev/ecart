@@ -8,5 +8,6 @@ public record AddressDto(
         String city,
         String state,
         String country,
+        String label,
         String zipCode
 ) {}

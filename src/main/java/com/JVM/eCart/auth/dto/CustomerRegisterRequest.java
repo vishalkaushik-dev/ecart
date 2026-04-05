@@ -30,9 +30,10 @@ public record CustomerRegisterRequest(
         @NotBlank(message = "Last name is required")
         String lastName,
 
-        @NotBlank(message = "Address line is required")
-        String addressLine1,
-
-        @NotBlank(message = "City is required")
-        String city
+        String addressLine,
+        String city,
+        String label,
+        String state,
+        String country,
+        String zipCode
 ) {}

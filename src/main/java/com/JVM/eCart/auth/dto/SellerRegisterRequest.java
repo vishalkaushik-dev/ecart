@@ -41,5 +41,12 @@ public record SellerRegisterRequest(
         String companyName,
 
         @NotBlank(message = "Company address is required")
-        String companyAddress
+        String companyAddress,
+
+        String addressLine,
+        String city,
+        String label,
+        String state,
+        String country,
+        String zipCode
 ) {}
