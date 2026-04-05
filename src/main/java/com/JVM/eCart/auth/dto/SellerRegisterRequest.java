@@ -16,8 +16,8 @@ public record SellerRegisterRequest(
 
         @NotBlank(message = "Password is required")
         @Pattern(
-                regexp = "^(?=.*[A-Z])(?=.*[0-9]).{6,}$",
-                message = "Password must contain 1 uppercase and 1 number"
+                regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=]).{8,}$",
+                message = "Password must be at least 8 characters long and include at least one uppercase letter, one number, and one special character (@#$%^&+=)"
         )
         String password,
 

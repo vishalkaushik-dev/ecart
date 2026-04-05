@@ -1,7 +1,7 @@
 package com.JVM.eCart.config;
 
 import com.JVM.eCart.auth.entity.Role;
-import com.JVM.eCart.auth.entity.User;
+import com.JVM.eCart.user.entity.User;
 import com.JVM.eCart.auth.repository.RoleRepository;
 import com.JVM.eCart.user.repository.UserRepository;
 import lombok.AllArgsConstructor;

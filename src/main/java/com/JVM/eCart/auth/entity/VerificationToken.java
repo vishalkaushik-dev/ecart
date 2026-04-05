@@ -1,5 +1,6 @@
 package com.JVM.eCart.auth.entity;
 
+import com.JVM.eCart.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 

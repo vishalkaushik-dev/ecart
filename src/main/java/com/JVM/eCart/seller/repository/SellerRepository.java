@@ -1,6 +1,6 @@
-package com.JVM.eCart.auth.repository;
+package com.JVM.eCart.seller.repository;
 
-import com.JVM.eCart.auth.entity.Seller;
+import com.JVM.eCart.seller.entity.Seller;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SellerRepository extends JpaRepository<Seller, Long> {

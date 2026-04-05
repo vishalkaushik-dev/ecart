@@ -1,12 +1,9 @@
-package com.JVM.eCart.auth.dto;
+package com.JVM.eCart.seller.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
-public record ResetPasswordRequest(
-
-        @NotBlank(message = "Token is required")
-        String token,
+public record UpdatePasswordRequest(
 
         @NotBlank(message = "Password is required")
         @Pattern(
@@ -15,6 +12,6 @@ public record ResetPasswordRequest(
         )
         String password,
 
-        @NotBlank(message = "Confirm Password is required")
+        @NotBlank(message = "Confirm password is required")
         String confirmPassword
-) {}
+) { }

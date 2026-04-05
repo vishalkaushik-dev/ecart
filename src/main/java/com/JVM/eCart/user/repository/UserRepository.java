@@ -2,7 +2,7 @@ package com.JVM.eCart.user.repository;
 
 import com.JVM.eCart.admin.dto.RegisteredCustomerResponse;
 import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
-import com.JVM.eCart.auth.entity.User;
+import com.JVM.eCart.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

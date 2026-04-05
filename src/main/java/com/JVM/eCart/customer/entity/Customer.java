@@ -1,6 +1,6 @@
 package com.JVM.eCart.customer.entity;
 
-import com.JVM.eCart.auth.entity.User;
+import com.JVM.eCart.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,9 +16,5 @@ public class Customer {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String phoneNumber;
-    private String addressLine1;
-    private String city;
-    private String state;
-    private String pincode;
+//    private String phoneNumber;
 }

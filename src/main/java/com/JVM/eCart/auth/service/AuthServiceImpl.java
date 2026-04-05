@@ -8,10 +8,16 @@ import com.JVM.eCart.auth.entity.*;
 import com.JVM.eCart.auth.repository.*;
 import com.JVM.eCart.customer.entity.Customer;
 import com.JVM.eCart.security.jwt.JwtTokenProvider;
+import com.JVM.eCart.seller.entity.Seller;
+import com.JVM.eCart.seller.repository.SellerRepository;
+import com.JVM.eCart.user.entity.Address;
+import com.JVM.eCart.user.entity.User;
+import com.JVM.eCart.user.repository.AddressRepository;
 import com.JVM.eCart.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +42,7 @@ public class AuthServiceImpl implements  IAuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final BlacklistedTokenRepository blacklistedTokenRepository;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
+    private final AddressRepository addressRepository;
 
     @Override
     public String registerCustomer(@Valid CustomerRegisterRequest customerRegisterRequest) {
@@ -51,6 +58,7 @@ public class AuthServiceImpl implements  IAuthService {
         // auto-copy safe fields
         BeanUtils.copyProperties(customerRegisterRequest, user);
         user.setPassword(passwordEncoder.encode(customerRegisterRequest.password()));
+        user.setPasswordUpdateDate(LocalDateTime.now());
         Role role = roleRepository.findByAuthority("ROLE_CUSTOMER")
                 .orElseThrow(() -> new IllegalArgumentException("Role not found"));
 
@@ -58,11 +66,15 @@ public class AuthServiceImpl implements  IAuthService {
         user.setPasswordUpdateDate(LocalDateTime.now());
         userRepository.save(user);
 
+        // Add address in address table
+        Address address = new Address();
+        BeanUtils.copyProperties(customerRegisterRequest, address);
+        address.setUser(user);
+        addressRepository.save(address);
+
         // Create Customer
         Customer customer = new Customer();
         customer.setUser(user);
-        customer.setPhoneNumber(customerRegisterRequest.phoneNumber());
-        customer.setAddressLine1(customerRegisterRequest.addressLine1());
         customerRepository.save(customer);
 
         // Generate Token
@@ -286,5 +298,16 @@ public class AuthServiceImpl implements  IAuthService {
         emailService.sendUpdatedPasswordConfirmationMail(user.getEmail());
 
         return "Password updated successfully";
+    }
+
+    public User getLoggedInUser() {
+
+        String email = SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with email: " + email));
     }
 }

@@ -2,7 +2,7 @@ package com.JVM.eCart.admin.service;
 
 import com.JVM.eCart.admin.dto.RegisteredCustomerResponse;
 import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
-import com.JVM.eCart.auth.entity.User;
+import com.JVM.eCart.user.entity.User;
 import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.user.repository.UserRepository;
 import lombok.AllArgsConstructor;

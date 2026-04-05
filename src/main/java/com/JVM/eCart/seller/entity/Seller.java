@@ -1,5 +1,6 @@
-package com.JVM.eCart.auth.entity;
+package com.JVM.eCart.seller.entity;
 
+import com.JVM.eCart.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -11,8 +12,8 @@ public class Seller {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     private String gst;

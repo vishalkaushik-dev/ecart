@@ -1,6 +1,6 @@
 package com.JVM.eCart.auth.repository;
 
-import com.JVM.eCart.auth.entity.User;
+import com.JVM.eCart.user.entity.User;
 import com.JVM.eCart.auth.entity.VerificationToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
