@@ -1,5 +1,7 @@
 package com.JVM.eCart.seller.service;
 
+import com.JVM.eCart.common.utils.UtilsHelper;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import com.JVM.eCart.seller.dto.AddressDto;
 import com.JVM.eCart.seller.dto.SellerViewProfileResponse;
 import com.JVM.eCart.seller.entity.Seller;
@@ -19,10 +21,12 @@ public class SellerService {
 
     private final SellerRepository sellerRepository;
     private final UserRepository userRepository;
+    private final UtilsHelper utilsHelper;
 
     public SellerViewProfileResponse viewProfile() {
 
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserPrincipal userPrincipal = utilsHelper.getCurrentUserPrincipal();
+        String email = userPrincipal.getUsername();
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         Seller seller = user.getSeller();

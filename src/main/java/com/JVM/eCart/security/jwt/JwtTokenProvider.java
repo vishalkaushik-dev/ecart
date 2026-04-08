@@ -37,6 +37,7 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
+                .claim("userId", user.getId())
                 .claim("role", user.getRoles().stream().map(role -> role.getAuthority()).toList())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -100,5 +101,15 @@ public class JwtTokenProvider {
                 .toList();
 
         return authorities;
+    }
+
+    public Long getUserIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", Long.class);
     }
 }

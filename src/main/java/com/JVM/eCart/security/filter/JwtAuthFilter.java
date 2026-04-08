@@ -2,6 +2,7 @@ package com.JVM.eCart.security.filter;
 
 import com.JVM.eCart.auth.repository.BlacklistedTokenRepository;
 import com.JVM.eCart.security.jwt.JwtTokenProvider;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,7 +50,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                     System.out.println("Authorities: " + authorityList.toString());
 
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, authorityList);
+                    String email = jwtTokenProvider.getUsernameFromToken(token);
+                    Long userId = jwtTokenProvider.getUserIdFromToken(token);
+
+                    UserPrincipal principal = new UserPrincipal(
+                            userId,
+                            email,
+                            null,
+                            authorityList,
+                            null
+                    );
+
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, null, authorityList);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {

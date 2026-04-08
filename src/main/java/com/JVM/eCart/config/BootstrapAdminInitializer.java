@@ -22,7 +22,7 @@ public class BootstrapAdminInitializer implements CommandLineRunner {
     @Override
     public void run(String ...args) {
 
-        String adminEmail = "admin@gmail.com";
+        String adminEmail = "vishal.kaushik@tothenew.com";
         Optional<User> existingAdmin = userRepository.findByEmail(adminEmail);
 
         if(existingAdmin.isEmpty()) {

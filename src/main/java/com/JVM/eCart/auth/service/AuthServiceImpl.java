@@ -6,8 +6,10 @@ import com.JVM.eCart.auth.dto.ResetPasswordRequest;
 import com.JVM.eCart.auth.dto.SellerRegisterRequest;
 import com.JVM.eCart.auth.entity.*;
 import com.JVM.eCart.auth.repository.*;
+import com.JVM.eCart.common.utils.UtilsHelper;
 import com.JVM.eCart.customer.entity.Customer;
 import com.JVM.eCart.security.jwt.JwtTokenProvider;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import com.JVM.eCart.seller.entity.Seller;
 import com.JVM.eCart.seller.repository.SellerRepository;
 import com.JVM.eCart.user.entity.Address;
@@ -43,6 +45,7 @@ public class AuthServiceImpl implements  IAuthService {
     private final BlacklistedTokenRepository blacklistedTokenRepository;
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
     private final AddressRepository addressRepository;
+    private final UtilsHelper utilsHelper;
 
     @Override
     public String registerCustomer(@Valid CustomerRegisterRequest customerRegisterRequest) {
@@ -308,9 +311,9 @@ public class AuthServiceImpl implements  IAuthService {
 
     public User getLoggedInUser() {
 
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
+        UserPrincipal userPrincipal = utilsHelper.getCurrentUserPrincipal();
+
+        String email = userPrincipal.getUsername();
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() ->

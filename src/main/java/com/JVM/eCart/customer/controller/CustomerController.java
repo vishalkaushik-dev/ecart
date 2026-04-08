@@ -1,5 +1,6 @@
 package com.JVM.eCart.customer.controller;
 
+import com.JVM.eCart.category.service.CategoryService;
 import com.JVM.eCart.customer.dto.AddAddressRequest;
 import com.JVM.eCart.customer.dto.UpdateCustomerProfileRequest;
 import com.JVM.eCart.customer.service.CustomerService;
@@ -18,6 +19,7 @@ public class CustomerController {
 
     private final UserService userService;
     private final CustomerService customerService;
+    private final CategoryService categoryService;
 
     @GetMapping("/view-profile")
     public ResponseEntity<?> viewProfile() {
@@ -52,5 +54,15 @@ public class CustomerController {
     @DeleteMapping("/address/{id}")
     public ResponseEntity<?> deleteAddress(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteAddress(id));
+    }
+
+    @GetMapping("/category")
+    public ResponseEntity<?> getAllCategory(@RequestParam(required = false) Long categoryId) {
+        return ResponseEntity.ok(categoryService.getAllCategoriesWithSellerView(categoryId));
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<?> getCategoryById(@PathVariable Long categoryId) {
+        return ResponseEntity.ok(categoryService.getCategoryByIdForCustomer(categoryId));
     }
 }
