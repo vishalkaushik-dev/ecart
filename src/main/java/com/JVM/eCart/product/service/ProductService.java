@@ -4,11 +4,16 @@ import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.category.entity.Category;
 import com.JVM.eCart.category.repository.CategoryRepository;
 import com.JVM.eCart.product.dto.AddProductRequest;
+import com.JVM.eCart.product.dto.CategoryDto;
+import com.JVM.eCart.product.dto.ProductResponseDto;
 import com.JVM.eCart.product.entity.Product;
 import com.JVM.eCart.product.repository.ProductRepository;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import com.JVM.eCart.seller.entity.Seller;
 import com.JVM.eCart.seller.repository.SellerRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +66,65 @@ public class ProductService {
                 "New product '" + product.getName() + "' has been added by Seller: "+ seller.getUser().getEmail() +  " and is pending approval."
         );
         return "Product added successfully";
+    }
+
+    public ProductResponseDto getProduct(Long id, Long userId) {
+
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        Seller seller = sellerRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Seller not found"));
+
+        System.out.println("Product Seller: " + product.getSeller().getUser().getEmail());
+        System.out.println("Requesting Seller: " + seller.getUser().getEmail());
+
+        if(!product.getSeller().getUser().getEmail().equals(seller.getUser().getEmail())) {
+            throw new RuntimeException("Access denied: Not product owner");
+        }
+
+        System.out.println("Product Category: " + product.getCategory().getName());
+        CategoryDto categoryDto = mapCategory(product.getCategory());
+
+        return new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getIsActive(),
+                product.getBrand(),
+                product.getIsDeleted(),
+                categoryDto,
+                product.getSeller().getUser().getEmail()
+        );
+    }
+
+    public Page<ProductResponseDto> getAllProducts(Pageable pageable, Long userId, String sellerEmail) {
+
+        Page<Product> products = productRepository.findBySeller_User_IdAndIsDeletedFalse(userId, pageable);
+
+        return products.map(product -> new ProductResponseDto(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getIsActive(),
+                product.getBrand(),
+                product.getIsDeleted(),
+                mapCategory(product.getCategory()),
+                sellerEmail
+        ));
+    }
+
+    private CategoryDto mapCategory(Category category) {
+
+        if (category == null) return null;
+
+        CategoryDto dto = new CategoryDto();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+
+        if (category.getParentCategory() != null) {
+            dto.setParent(mapCategory(category.getParentCategory()));
+        }
+
+        return dto;
     }
 
 }

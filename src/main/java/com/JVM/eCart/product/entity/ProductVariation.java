@@ -1,9 +1,14 @@
 package com.JVM.eCart.product.entity;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "product_variation")
@@ -23,11 +28,13 @@ public class ProductVariation {
 
     private BigDecimal price;
 
-    // JSON field
-    @Column(columnDefinition = "json")
-    private String metadata;
+    @Column(columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, String> metadata;
 
     private String primaryImageName;
+
+    private List<String> secondaryImages;
 
     private Boolean isActive = true;
 }
