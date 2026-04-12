@@ -30,45 +30,35 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         try {
+            String header = request.getHeader("Authorization");
+
             if (header != null && header.startsWith("Bearer ")) {
                 String token = header.substring(7);
 
-                if(blacklistedTokenRepository.existsByToken(token)) {
-                    throw new RuntimeException("Token has been expired, please login again");
+                if (blacklistedTokenRepository.existsByToken(token)) {
+                    throw new RuntimeException("Token expired");
                 }
 
-                if(jwtTokenProvider.validateToken(token)) {
-                    String username = jwtTokenProvider.getUsernameFromToken(token);
-                    List<SimpleGrantedAuthority> authorityList = jwtTokenProvider.getAuthoritiesFromToken(token);
-
-                    System.out.println("Authorities: " + authorityList.toString());
-
+                if (jwtTokenProvider.validateToken(token)) {
                     String email = jwtTokenProvider.getUsernameFromToken(token);
                     Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                    List<SimpleGrantedAuthority> authorities = jwtTokenProvider.getAuthoritiesFromToken(token);
 
                     UserPrincipal principal = new UserPrincipal(
-                            userId,
-                            email,
-                            null,
-                            authorityList,
-                            null
+                            userId, email, null, authorities, null
                     );
 
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(principal, null, authorityList);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(principal, null, authorities);
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+
                 } else {
                     throw new BadCredentialsException("Invalid JWT token");
                 }
             }
-            filterChain.doFilter(request, response);
+
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -76,6 +66,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             response.getWriter().write("{\"error\": \"" + e.getMessage() + "\"}");
             return;
         }
+        filterChain.doFilter(request, response);
     }
 
 }

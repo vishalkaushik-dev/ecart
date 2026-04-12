@@ -24,4 +24,15 @@ public interface ProductVariationRepository extends JpaRepository<ProductVariati
 """)
     Page<ProductVariation> findAllBySellerUserId(@Param("sellerUserId") Long sellerUserId, Pageable pageable);
 
+    @Query("""
+    SELECT pv FROM ProductVariation pv
+    JOIN pv.product p
+    WHERE pv.id = :productVariationId
+     AND p.seller.user.id = :sellerUserId
+    AND p.isDeleted = false
+""")
+    Page<ProductVariation> findAllByIdAndSellerUserId(@Param("sellerUserId") Long sellerUserId, @Param("productVariationId") Long productVariationId, Pageable pageable);
+
+    List<ProductVariation> findByProduct_IdAndIsActiveTrue(Long productId);
+
 }

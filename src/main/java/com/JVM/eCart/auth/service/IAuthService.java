@@ -21,5 +21,5 @@ public interface IAuthService {
 
      String forgotPassword(String email);
 
-     String resetPassword(ResetPasswordRequest resetPasswordRequest);
+     String resetPassword(ResetPasswordRequest resetPasswordRequest, String token);
 }

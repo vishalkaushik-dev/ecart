@@ -284,13 +284,13 @@ public class AuthServiceImpl implements  IAuthService {
     }
 
     @Override
-    public String resetPassword(ResetPasswordRequest request) {
+    public String resetPassword(ResetPasswordRequest request, String requestToken) {
 
         if(!request.password().equals(request.confirmPassword())) {
             throw new RuntimeException("Passwords do not match");
         }
 
-        ForgotPasswordToken token = forgotPasswordTokenRepository.findByToken(request.token()).orElseThrow(() -> new RuntimeException("Invalid token"));
+        ForgotPasswordToken token = forgotPasswordTokenRepository.findByToken(requestToken).orElseThrow(() -> new RuntimeException("Invalid token"));
 
         if(token.getExpiryDate().isBefore(LocalDateTime.now())) {
             forgotPasswordTokenRepository.delete(token);

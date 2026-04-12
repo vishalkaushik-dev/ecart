@@ -1,10 +1,7 @@
 package com.JVM.eCart.seller.controller;
 
 import com.JVM.eCart.category.service.CategoryService;
-import com.JVM.eCart.product.dto.AddProductRequest;
-import com.JVM.eCart.product.dto.AddProductVariationRequest;
-import com.JVM.eCart.product.dto.ProductResponseDto;
-import com.JVM.eCart.product.dto.ProductVariationResponse;
+import com.JVM.eCart.product.dto.*;
 import com.JVM.eCart.product.service.ProductService;
 import com.JVM.eCart.product.service.ProductVariationService;
 import com.JVM.eCart.security.jwt.UserPrincipal;
@@ -18,6 +15,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -80,19 +78,48 @@ public class SellerController {
     }
 
     @GetMapping("/product")
-    public Page<ProductResponseDto> getAllProducts(@RequestParam(defaultValue = "0") int page,
-                                                                   @RequestParam(defaultValue = "10") int size,
-                                                                   @AuthenticationPrincipal UserPrincipal userPrincipal) {
+    public Page<ProductResponseDto> getAllProducts(@RequestParam(defaultValue = "10") int pageSize,
+                                                   @RequestParam(defaultValue = "0") int pageOffset,
+                                                   @RequestParam(defaultValue = "id") String sort,
+                                                   @RequestParam(defaultValue = "ASC", required = false) String order,
+                                                   @RequestParam(required = false) String query,
+                                                   @AuthenticationPrincipal UserPrincipal userPrincipal) {
 
-        Pageable pageable = PageRequest.of(page, size);
-        return productService.getAllProducts(pageable, userPrincipal.getId(), userPrincipal.getUsername());
+        Sort.Direction direction = (order != null && order.equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pageOffset, pageSize, Sort.by(direction, sort));
+
+        return productService.getAllProducts(query, pageable, userPrincipal.getId(), userPrincipal.getUsername());
     }
 
     @GetMapping("/product-variation")
-    public Page<ProductVariationResponse> getAllProductVariation(@RequestParam(defaultValue = "0") int page,
-                                                                 @RequestParam(defaultValue = "10") int size,
+    public Page<ProductVariationResponse> getAllProductVariation(@RequestParam(defaultValue = "10") int pageSize,
+                                                                 @RequestParam(defaultValue = "0") int pageOffset,
+                                                                 @RequestParam(defaultValue = "id") String sort,
+                                                                 @RequestParam(defaultValue = "ASC", required = false) String order,
+                                                                 @RequestParam(required = false) Long query,
                                                                  @AuthenticationPrincipal UserPrincipal userPrincipal) {
-        Pageable pageable = PageRequest.of(page, size);
-        return productVariationService.getAllProductVariation(pageable, userPrincipal.getId());
+
+        Sort.Direction direction = (order != null && order.equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(pageOffset,pageSize, Sort.by(direction, sort));
+        return productVariationService.getAllProductVariation(query, pageable, userPrincipal.getId());
+    }
+
+    @DeleteMapping("/product/{productId}")
+    public ResponseEntity<String> deleteProduct(@PathVariable Long productId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(productService.deleteProduct(productId, userPrincipal.getId()));
+    }
+
+    @PutMapping("/product/{productId}")
+    public ResponseEntity<String> updateProduct(@PathVariable Long productId,
+                                           @RequestBody UpdateProductRequest request,
+                                           @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(productService.updateProduct(productId, request, userPrincipal.getId()));
+    }
+
+    @PutMapping("/product-variation/{variationId}")
+    public ResponseEntity<?> updateProductVariation(@PathVariable Long variationId,
+                                                    @RequestBody UpdateProductVariationRequest request,
+                                                    @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(productVariationService.updateProductVariation(variationId, request, userPrincipal.getId()));
     }
 }

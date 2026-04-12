@@ -5,9 +5,13 @@ import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
 import com.JVM.eCart.admin.service.AdminService;
 import com.JVM.eCart.category.dto.*;
 import com.JVM.eCart.category.service.CategoryService;
+import com.JVM.eCart.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +27,7 @@ public class AdminController {
 
     private final AdminService adminService;
     private final CategoryService categoryService;
+    private final ProductService productService;
 
     @GetMapping("/registered-customers")
     public ResponseEntity<?> getRegisteredCustomers(@RequestParam(defaultValue = "10") int pageSize,
@@ -139,4 +144,32 @@ public class AdminController {
         return  ResponseEntity.ok(categoryService.updateMetadataValues(request));
     }
 
+    @GetMapping("/products/{productId}")
+    public ResponseEntity<?> getProduct(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.getProductForAdmin(productId));
+    }
+
+    @GetMapping("/products")
+    public ResponseEntity<?> getAllProducts(
+            @RequestParam(required = false, defaultValue = "10") Integer max,
+            @RequestParam(required = false,defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "id") String sort,
+            @RequestParam(required = false, defaultValue = "ASC") String order,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long sellerId
+    ) {
+        Sort.Direction direction = (order != null && order.equalsIgnoreCase("desc")) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort));
+        return ResponseEntity.ok(productService.getAllProductsForAdmin(categoryId, sellerId, pageable));
+    }
+
+    @PutMapping("/products/{productId}/deactivate")
+    public ResponseEntity<?> deactivateProduct(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.deactivateProduct(productId));
+    }
+
+    @PutMapping("/products/{productId}/activate")
+    public ResponseEntity<?> activateProduct(@PathVariable Long productId) {
+        return ResponseEntity.ok(productService.activateProduct(productId));
+    }
 }

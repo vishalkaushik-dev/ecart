@@ -5,6 +5,8 @@ import com.JVM.eCart.seller.entity.Seller;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Table(
         name = "product",
@@ -31,6 +33,9 @@ public class Product {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category; // MUST be leaf
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    private List<ProductVariation> variations;
 
     private Boolean isCancellable;
     private Boolean isReturnable;

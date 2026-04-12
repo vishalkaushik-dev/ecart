@@ -5,6 +5,7 @@ import com.JVM.eCart.category.entity.CategoryMetadataFieldValue;
 import com.JVM.eCart.category.repository.CategoryMetadataFieldValuesRepository;
 import com.JVM.eCart.product.dto.AddProductVariationRequest;
 import com.JVM.eCart.product.dto.ProductVariationResponse;
+import com.JVM.eCart.product.dto.UpdateProductVariationRequest;
 import com.JVM.eCart.product.entity.Product;
 import com.JVM.eCart.product.entity.ProductVariation;
 import com.JVM.eCart.product.repository.ProductRepository;
@@ -83,7 +84,7 @@ public class ProductVariationService {
         productVariation.setProduct(product);
         productVariation.setQuantityAvailable(request.quantityAvailable());
         productVariation.setPrice(request.price());
-        productVariation.setPrimaryImageName(request.primaryImageName());
+        productVariation.setPrimaryImage(request.primaryImageName());
         productVariation.setIsActive(true);
         productVariation.setMetadata(request.metadata());
 
@@ -113,7 +114,7 @@ public class ProductVariationService {
                 variation.getId(),
                 variation.getPrice(),
                 variation.getQuantityAvailable(),
-                variation.getPrimaryImageName(),
+                variation.getPrimaryImage(),
                 variation.getSecondaryImages(),
                 variation.getMetadata(),
                 variation.getIsActive(),
@@ -124,15 +125,21 @@ public class ProductVariationService {
         );
     }
 
-    public Page<ProductVariationResponse> getAllProductVariation(Pageable pageable, Long sellerUserId) {
+    public Page<ProductVariationResponse> getAllProductVariation(Long productVariationId, Pageable pageable, Long sellerUserId) {
 
-        Page<ProductVariation> allProductVariations = variationRepository.findAllBySellerUserId(sellerUserId, pageable);
+
+        Page<ProductVariation> allProductVariations;
+        if(productVariationId != null) {
+            allProductVariations = variationRepository.findAllByIdAndSellerUserId(sellerUserId, productVariationId, pageable);
+        } else {
+            allProductVariations = variationRepository.findAllBySellerUserId(sellerUserId, pageable);
+        }
 
         return allProductVariations.map(v -> new ProductVariationResponse(
                 v.getId(),
                 v.getPrice(),
                 v.getQuantityAvailable(),
-                v.getPrimaryImageName(),
+                v.getPrimaryImage(),
                 v.getSecondaryImages(),
                 v.getMetadata(),
                 v.getIsActive(),
@@ -140,6 +147,75 @@ public class ProductVariationService {
                 v.getProduct().getName(),
                 v.getProduct().getDescription()
         ));
+    }
+
+    public String updateProductVariation(Long variationId, UpdateProductVariationRequest request, Long userId) {
+
+        ProductVariation productVariation = variationRepository.findById(variationId).orElseThrow(() -> new RuntimeException("Product variation ID not found"));
+
+        Product product = productVariation.getProduct();
+
+        if(Boolean.TRUE.equals(product.getIsDeleted()))
+            throw new RuntimeException("Product you want to update is deleted");
+
+        if (!Boolean.TRUE.equals(product.getIsActive()))
+            throw new RuntimeException("Product is not active");
+
+        if(!product.getSeller().getUser().getId().equals(userId))
+            throw new RuntimeException("Access denied: Not owner");
+
+        if(request.quantityAvailable() != null){
+            if(request.quantityAvailable() < 0)
+                throw new RuntimeException("Price can not be negative");
+            productVariation.setQuantityAvailable(request.quantityAvailable());
+        }
+
+        if (request.price() != null) {
+            if (request.price().compareTo(BigDecimal.ZERO) < 0) {
+                throw new RuntimeException("Price cannot be negative");
+            }
+            productVariation.setPrice(request.price());
+        }
+
+        // Metadata validations and structure consistency
+        if(request.metaData() != null && !request.metaData().isEmpty()) {
+            List<ProductVariation> allVariations = variationRepository.findByProduct_Id(product.getId());
+
+            if(!allVariations.isEmpty()) {
+                Map<String,String> existingMeta = allVariations.get(0).getMetadata();
+
+                if(!existingMeta.keySet().equals(request.metaData().keySet())) {
+                    throw new RuntimeException("All variations must have same metadata structure");
+                }
+            }
+
+            // Validate values against category
+            validateMetadataWithCategory(product.getCategory(), request.metaData());
+
+            productVariation.setMetadata(request.metaData());
+        }
+
+        if (request.primaryImage() != null) {
+            if (!isValidImage(request.primaryImage())) {
+                throw new RuntimeException("Invalid primary image format");
+            }
+            productVariation.setPrimaryImage(request.primaryImage());
+        }
+
+        if (request.secondaryImage() != null) {
+            for (String img : request.secondaryImage()) {
+                if (!isValidImage(img)) {
+                    throw new RuntimeException("Invalid secondary image format");
+                }
+            }
+            productVariation.setSecondaryImages(request.secondaryImage());
+        }
+
+        if(request.isActive() != null)
+            productVariation.setIsActive(request.isActive());
+
+        variationRepository.save(productVariation);
+        return "Product variation updated successfully";
     }
 
     private boolean isValidImage(String imageName) {

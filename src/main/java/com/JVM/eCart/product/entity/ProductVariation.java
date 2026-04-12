@@ -32,7 +32,7 @@ public class ProductVariation {
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, String> metadata;
 
-    private String primaryImageName;
+    private String primaryImage;
 
     private List<String> secondaryImages;
 

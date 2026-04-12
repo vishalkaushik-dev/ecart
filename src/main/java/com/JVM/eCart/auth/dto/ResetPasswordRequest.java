@@ -5,9 +5,6 @@ import jakarta.validation.constraints.Pattern;
 
 public record ResetPasswordRequest(
 
-        @NotBlank(message = "Token is required")
-        String token,
-
         @NotBlank(message = "Password is required")
         @Pattern(
                 regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[@#$%^&+=]).{8,}$",
