@@ -4,9 +4,14 @@ import com.JVM.eCart.category.service.CategoryService;
 import com.JVM.eCart.customer.dto.AddAddressRequest;
 import com.JVM.eCart.customer.dto.UpdateCustomerProfileRequest;
 import com.JVM.eCart.customer.service.CustomerService;
+import com.JVM.eCart.order.dto.AddToCartRequest;
+import com.JVM.eCart.order.dto.ViewCartResponse;
+import com.JVM.eCart.order.service.CartService;
+import com.JVM.eCart.order.service.OrderService;
 import com.JVM.eCart.product.dto.CustomerAllProductsResponse;
 import com.JVM.eCart.product.dto.CustomerProductResponse;
 import com.JVM.eCart.product.service.ProductService;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import com.JVM.eCart.seller.dto.AddressDto;
 import com.JVM.eCart.seller.dto.UpdatePasswordRequest;
 import com.JVM.eCart.user.service.UserService;
@@ -17,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,6 +34,8 @@ public class CustomerController {
     private final CustomerService customerService;
     private final CategoryService categoryService;
     private final ProductService productService;
+    private final CartService cartService;
+    private final OrderService orderService;
 
     @GetMapping("/view-profile")
     public ResponseEntity<?> viewProfile() {
@@ -105,5 +113,35 @@ public class CustomerController {
         Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort != null ? sort : "id"));
 
         return ResponseEntity.ok(productService.getSimilarProducts(productId, query, pageable));
+    }
+
+    @PostMapping("/cart")
+    public ResponseEntity<?> addToCart(@RequestBody @Valid AddToCartRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal){
+        return ResponseEntity.ok(cartService.addToCart(userPrincipal.getId(),request));
+    }
+
+    @GetMapping("/cart")
+    public ResponseEntity<ViewCartResponse> viewCart(@AuthenticationPrincipal UserPrincipal userPrincipal){
+        return ResponseEntity.ok(cartService.viewCart(userPrincipal.getId()));
+    }
+
+    @DeleteMapping("/cart/{productVariationId}")
+    public ResponseEntity<String> deleteProductFromCart(@PathVariable Long productVariationId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(cartService.deleteFromCart(userPrincipal.getId(), productVariationId));
+    }
+
+    @PutMapping("/cart")
+    public ResponseEntity<String> updateCart(@Valid @RequestBody AddToCartRequest request, @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(cartService.updateCart(user.getId(), request));
+    }
+
+    @DeleteMapping("/cart")
+    public ResponseEntity<?> emptyCart(@AuthenticationPrincipal UserPrincipal user){
+        return ResponseEntity.ok(cartService.emptyCart(user.getId()));
+    }
+
+    @PostMapping("/order")
+    public ResponseEntity<?> placeOrder(@RequestParam(required = true) Long addressId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(orderService.placeOrder(addressId, userPrincipal.getId()));
     }
 }

@@ -18,8 +18,8 @@ public class Address {
     private String zipCode;
     private String label;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id") // FK column
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) // FK column
     private User user;
 
 }
