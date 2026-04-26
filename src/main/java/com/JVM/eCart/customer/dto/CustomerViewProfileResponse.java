@@ -9,5 +9,6 @@ public record CustomerViewProfileResponse(
         String firstName,
         String lastName,
         Boolean isActive,
-        List<AddressDto> contact
+        String phoneNumber,
+        List<AddressDto> contactAddress
 ) { }

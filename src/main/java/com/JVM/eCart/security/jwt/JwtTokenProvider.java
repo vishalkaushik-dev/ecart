@@ -1,9 +1,11 @@
 package com.JVM.eCart.security.jwt;
 
 import com.JVM.eCart.user.entity.User;
+import com.JVM.eCart.user.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -15,6 +17,12 @@ import java.util.List;
 
 @Component
 public class JwtTokenProvider {
+
+    private final UserRepository userRepository;
+
+    public JwtTokenProvider(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Value("${jwt.secret}")
     private String jwtSecret;
@@ -111,5 +119,10 @@ public class JwtTokenProvider {
                 .getBody();
 
         return claims.get("userId", Long.class);
+    }
+
+    public String getActiveToken(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getActiveToken();
     }
 }

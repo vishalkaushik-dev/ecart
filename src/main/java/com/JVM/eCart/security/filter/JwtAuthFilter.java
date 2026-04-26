@@ -45,6 +45,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     Long userId = jwtTokenProvider.getUserIdFromToken(token);
                     List<SimpleGrantedAuthority> authorities = jwtTokenProvider.getAuthoritiesFromToken(token);
 
+                    if (!token.equals(jwtTokenProvider.getActiveToken(userId)))
+                        throw new BadCredentialsException("Token expired or invalid");
+
                     UserPrincipal principal = new UserPrincipal(
                             userId, email, null, authorities, null
                     );

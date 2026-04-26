@@ -18,7 +18,9 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
 
     List<Cart> findByCustomer(Customer customer);
 
-    Optional<Cart> findByCustomer_User_IdAndProductVariation_Id(Long userid, Long productVariationId);
+    Optional<Cart> findByCustomer_User_IdAndProductVariation_Id(Long userId, Long productVariationId);
+
+    List<Cart> findByCustomer_User_IdAndProductVariation_IdIn(Long userId, List<Long> productVariationIds);
 
     @Modifying
     @Transactional

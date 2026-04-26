@@ -6,6 +6,7 @@ import com.JVM.eCart.user.entity.User;
 import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
@@ -39,16 +41,16 @@ public class AdminService {
         return userRepository.findRegisteredSellers("ROLE_SELLER", email, pageable);
     }
 
-    public String activateCustomer(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    public String activateCustomer(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         boolean isCustomer = user.getRoles().stream().anyMatch(role -> role.getAuthority().equalsIgnoreCase("ROLE_CUSTOMER"));
         if(!isCustomer) {
-            throw new RuntimeException("User with id: " + userId +  " is not a customer");
+            throw new RuntimeException("User with email: " + email +  " is not a customer");
         }
 
         if(user.isActive()) {
-            return "Customer is already active.";
+            return "User is already active.";
         }
 
         user.setActive(true);
@@ -59,12 +61,12 @@ public class AdminService {
         return "Customer has been activated.";
     }
 
-    public String deactivateCustomer(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    public String deactivateCustomer(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         boolean isCustomer = user.getRoles().stream().anyMatch(role -> role.getAuthority().equalsIgnoreCase("ROLE_CUSTOMER"));
         if(!isCustomer) {
-            throw new RuntimeException("User with id: " + userId +  " is not a customer");
+            throw new RuntimeException("User with email: " + email +  " is not a customer");
         }
 
         if(!user.isActive()) {
@@ -79,12 +81,12 @@ public class AdminService {
         return "Customer has been deactivated.";
     }
 
-    public String activateSeller(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    public String activateSeller(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         boolean isSeller = user.getRoles().stream().anyMatch(role -> role.getAuthority().equalsIgnoreCase("ROLE_SELLER"));
         if(!isSeller) {
-            throw new RuntimeException("User with id: " + userId +  " is not a seller");
+            throw new RuntimeException("User with email: " + email +  " is not a seller");
         }
 
         if(user.isActive()) {
@@ -99,12 +101,12 @@ public class AdminService {
         return "Seller has been activated.";
     }
 
-    public String deactivateSeller(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+    public String deactivateSeller(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found with email: " + email));
 
         boolean isSeller = user.getRoles().stream().anyMatch(role -> role.getAuthority().equalsIgnoreCase("ROLE_SELLER"));
         if(!isSeller) {
-            throw new RuntimeException("User with id: " + userId +  " is not a seller");
+            throw new RuntimeException("User with email: " + email +  " is not a seller");
         }
 
         if(!user.isActive()) {

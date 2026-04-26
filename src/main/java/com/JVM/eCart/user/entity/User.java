@@ -1,5 +1,6 @@
 package com.JVM.eCart.user.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.auth.entity.Role;
 import com.JVM.eCart.customer.entity.Customer;
 import com.JVM.eCart.seller.entity.Seller;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "users")
-public class User {
+public class User extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +31,9 @@ public class User {
 
     private String lastName;
 
+    @Column(unique = true)
+    private String phoneNumber;
+
     private boolean isActive = false;
 
     private boolean isLocked = false;
@@ -42,6 +46,9 @@ public class User {
     private boolean isBootstrapAdmin = false;
 
     private LocalDateTime passwordUpdateDate;
+
+    @Column(columnDefinition = "TEXT")
+    private String activeToken;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

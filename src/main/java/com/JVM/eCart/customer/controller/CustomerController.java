@@ -4,8 +4,7 @@ import com.JVM.eCart.category.service.CategoryService;
 import com.JVM.eCart.customer.dto.AddAddressRequest;
 import com.JVM.eCart.customer.dto.UpdateCustomerProfileRequest;
 import com.JVM.eCart.customer.service.CustomerService;
-import com.JVM.eCart.order.dto.AddToCartRequest;
-import com.JVM.eCart.order.dto.ViewCartResponse;
+import com.JVM.eCart.order.dto.*;
 import com.JVM.eCart.order.service.CartService;
 import com.JVM.eCart.order.service.OrderService;
 import com.JVM.eCart.product.dto.CustomerAllProductsResponse;
@@ -47,8 +46,8 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getAddresses());
     }
 
-    @PatchMapping("/profile")
-    public ResponseEntity<?> updateProfile(@RequestBody UpdateCustomerProfileRequest request) {
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateCustomerProfileRequest request) {
         return ResponseEntity.ok(userService.updateCustomerProfile(request));
     }
 
@@ -58,7 +57,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/address/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @RequestBody AddressDto request) {
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @Valid @RequestBody AddressDto request) {
         return ResponseEntity.ok(userService.updateAddress(id, request));
     }
 
@@ -140,8 +139,50 @@ public class CustomerController {
         return ResponseEntity.ok(cartService.emptyCart(user.getId()));
     }
 
-    @PostMapping("/order")
+    @PostMapping("/orders")
     public ResponseEntity<?> placeOrder(@RequestParam(required = true) Long addressId, @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(orderService.placeOrder(addressId, userPrincipal.getId()));
     }
+
+    @PostMapping("/orders/checkout")
+    public ResponseEntity<?> placePartialOrder(@Valid @RequestBody PartialOrderRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(orderService.placePartialOrder(request, userPrincipal.getId()));
+    }
+
+    @PostMapping("/orders/buy-now")
+    public ResponseEntity<?> placeDirectOrder(@Valid @RequestBody SingleOrderRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(orderService.placeDirectOrder(request, userPrincipal.getId()));
+    }
+
+    @PatchMapping("/order-products/{orderProductId}/cancel")
+    public ResponseEntity<?> cancelOrderedProduct(@PathVariable Long orderProductId, @AuthenticationPrincipal UserPrincipal userPrincipal){
+        return ResponseEntity.ok(orderService.cancelOrderedProduct(userPrincipal.getId(), orderProductId));
+    }
+
+    @PatchMapping("/order-products/{orderProductId}/return")
+    public ResponseEntity<?> returnOrderProduct(@PathVariable Long orderProductId, @RequestBody ReturnOrderRequest request, @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(orderService.returnOrderProduct(userPrincipal.getId(), orderProductId, request));
+    }
+
+    @GetMapping("/orders/{orderId}")
+    public ResponseEntity<ViewOrderResponse> viewOrder(@PathVariable Long orderId, @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(orderService.viewOrder(user.getId(), orderId));
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<?> viewAllOrders(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(defaultValue = "10") int max,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "dateCreated") String sort,
+            @RequestParam(defaultValue = "desc") String order
+    ) {
+        Sort.Direction direction = order.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort));
+        return ResponseEntity.ok(orderService.viewAllOrders(user.getId(), pageable, max, offset));
+    }
+
 }

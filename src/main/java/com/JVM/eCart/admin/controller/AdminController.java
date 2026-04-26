@@ -62,24 +62,24 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/customers/{userId}/activate")
-    public ResponseEntity<?> activateCustomer(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminService.activateCustomer(userId));
+    @PatchMapping("/customer/activate")
+    public ResponseEntity<?> activateCustomer(@RequestParam String email) {
+        return ResponseEntity.ok(adminService.activateCustomer(email));
     }
 
-    @PatchMapping("/customers/{userId}/deactivate")
-    public ResponseEntity<?> deactivateCustomer(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminService.deactivateCustomer(userId));
+    @PatchMapping("/customer/deactivate")
+    public ResponseEntity<?> deactivateCustomer(@RequestParam String email) {
+        return ResponseEntity.ok(adminService.deactivateCustomer(email));
     }
 
-    @PatchMapping("/sellers/{userId}/activate")
-    public ResponseEntity<?> activateSeller(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminService.activateSeller(userId));
+    @PatchMapping("/seller/activate")
+    public ResponseEntity<?> activateSeller(@RequestParam String email) {
+        return ResponseEntity.ok(adminService.activateSeller(email));
     }
 
-    @PatchMapping("/sellers/{userId}/deactivate")
-    public ResponseEntity<?> deactivateSeller(@PathVariable Long userId) {
-        return ResponseEntity.ok(adminService.deactivateSeller(userId));
+    @PatchMapping("/seller/deactivate")
+    public ResponseEntity<?> deactivateSeller(@RequestParam String email) {
+        return ResponseEntity.ok(adminService.deactivateSeller(email));
     }
 
     @PostMapping("/metadata-field")

@@ -126,6 +126,8 @@ public class UserService {
             user.setLastName(request.lastName());
         if(request.email() != null)
             user.setEmail(request.email());
+        if(request.phoneNumber() != null)
+            user.setPhoneNumber(request.phoneNumber());
 
         userRepository.save(user);
         return "Profile updated successfully";

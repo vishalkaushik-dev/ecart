@@ -22,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -46,9 +47,10 @@ public class AuthServiceImpl implements  IAuthService {
     private final ForgotPasswordTokenRepository forgotPasswordTokenRepository;
     private final AddressRepository addressRepository;
     private final UtilsHelper utilsHelper;
+    private final LoginAttemptService loginAttemptService;
 
     @Override
-    public String registerCustomer(@Valid CustomerRegisterRequest customerRegisterRequest) {
+    public String registerCustomer(CustomerRegisterRequest customerRegisterRequest) {
         if (userRepository.existsByEmail(customerRegisterRequest.email())) {
             throw new IllegalArgumentException("Email already exists");
         }
@@ -70,10 +72,10 @@ public class AuthServiceImpl implements  IAuthService {
         userRepository.save(user);
 
         // Add address in address table
-        Address address = new Address();
-        BeanUtils.copyProperties(customerRegisterRequest, address);
-        address.setUser(user);
-        addressRepository.save(address);
+//        Address address = new Address();
+//        BeanUtils.copyProperties(customerRegisterRequest, address);
+//        address.setUser(user);
+//        addressRepository.save(address);
 
         // Create Customer
         Customer customer = new Customer();
@@ -186,10 +188,10 @@ public class AuthServiceImpl implements  IAuthService {
         userRepository.save(user);
 
         // Add address in address table
-        Address address = new Address();
-        BeanUtils.copyProperties(sellerRegisterRequest, address);
-        address.setUser(user);
-        addressRepository.save(address);
+//        Address address = new Address();
+//        BeanUtils.copyProperties(sellerRegisterRequest, address);
+//        address.setUser(user);
+//        addressRepository.save(address);
 
         Seller seller = new Seller();
         BeanUtils.copyProperties(sellerRegisterRequest, seller);
@@ -214,24 +216,19 @@ public class AuthServiceImpl implements  IAuthService {
         }
 
         if(!passwordEncoder.matches(password, user.getPassword())) {
-
             if(!user.isBootstrapAdmin()) {
-                user.setInvalidAttemptCount(user.getInvalidAttemptCount() + 1);
+                Boolean isAccountGetLocked = loginAttemptService.handleInvalidAttempt(user.getId());
 
-                if(user.getInvalidAttemptCount() >= 3) {
-                    user.setLocked(true);
-                    emailService.sendAccountLockedEmail(user.getEmail());
-                }
-                userRepository.save(user);
+                if(isAccountGetLocked)
+                    throw new RuntimeException("Your account gets locked due to multiple login attempts");
             }
-
             throw new RuntimeException("Invalid credentials");
         }
 
         user.setInvalidAttemptCount(0);
-        userRepository.save(user);
-        System.out.println("Roles ===>"+ user.getRoles());
         String token = jwtTokenProvider.generateToken(user);
+        user.setActiveToken(token);
+        userRepository.save(user);
         return new LoginResponse(token, "Bearer", "Login Successful");
     }
 

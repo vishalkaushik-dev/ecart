@@ -44,7 +44,6 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-//    @PreAuthorize("hasRole('ROLE_CUSTOMER') or hasRole('SELLER')")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(authServiceImpl.logout(token));
     }

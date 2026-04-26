@@ -1,5 +1,6 @@
 package com.JVM.eCart.order.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.customer.entity.Customer;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,9 +9,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "orders")
 @Data
 
-public class Order {
+public class Order extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

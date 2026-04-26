@@ -3,7 +3,7 @@ package com.JVM.eCart.order.enums;
 import java.util.EnumSet;
 import java.util.Set;
 
-public enum OrderStatus {
+public enum OrderStatusEnum {
 
     ORDER_PLACED,
     CANCELLED,
@@ -20,7 +20,7 @@ public enum OrderStatus {
     REFUND_COMPLETED,
     CLOSED;
 
-    private Set<OrderStatus> allowedTransitions;
+    private Set<OrderStatusEnum> allowedTransitions;
 
     static {
         ORDER_PLACED.allowedTransitions = EnumSet.of(
@@ -75,14 +75,14 @@ public enum OrderStatus {
                 CLOSED
         );
 
-        CLOSED.allowedTransitions = EnumSet.noneOf(OrderStatus.class);
+        CLOSED.allowedTransitions = EnumSet.noneOf(OrderStatusEnum.class);
     }
 
-    public boolean canTransitionTo(OrderStatus next) {
+    public boolean canTransitionTo(OrderStatusEnum next) {
         return allowedTransitions.contains(next);
     }
 
-    public Set<OrderStatus> getAllowedTransitions() {
+    public Set<OrderStatusEnum> getAllowedTransitions() {
         return allowedTransitions;
     }
 }

@@ -1,7 +1,9 @@
 package com.JVM.eCart.order.entity;
 
+import com.JVM.eCart.order.enums.OrderStatusEnum;
 import com.JVM.eCart.product.entity.ProductVariation;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -29,4 +31,8 @@ public class OrderProduct {
 
     @OneToMany(fetch = FetchType.LAZY)
     List<OrderStatus> orderStatusList;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private OrderStatusEnum currentStatus;
 }

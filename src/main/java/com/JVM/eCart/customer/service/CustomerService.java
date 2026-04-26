@@ -37,6 +37,7 @@ public class CustomerService {
                 user.getFirstName(),
                 user.getLastName(),
                 user.isActive(),
+                user.getPhoneNumber(),
                 addressDtoList
         );
     }

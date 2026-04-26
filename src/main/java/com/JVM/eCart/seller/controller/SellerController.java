@@ -1,6 +1,8 @@
 package com.JVM.eCart.seller.controller;
 
 import com.JVM.eCart.category.service.CategoryService;
+import com.JVM.eCart.order.dto.UpdateOrderStatusRequest;
+import com.JVM.eCart.order.service.OrderService;
 import com.JVM.eCart.product.dto.*;
 import com.JVM.eCart.product.service.ProductService;
 import com.JVM.eCart.product.service.ProductVariationService;
@@ -30,13 +32,14 @@ public class SellerController {
     private final CategoryService categoryService;
     private final ProductService productService;
     private final ProductVariationService productVariationService;
+    private final OrderService orderService;
 
     @GetMapping("/view-profile")
     public ResponseEntity<?> viewProfile() {
         return ResponseEntity.ok(sellerService.viewProfile());
     }
 
-    @PatchMapping("/profile")
+    @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(@Valid @RequestBody UpdateSellerProfileRequest request) {
         return ResponseEntity.ok(userService.updateSellerProfile(request));
     }
@@ -121,5 +124,26 @@ public class SellerController {
                                                     @RequestBody UpdateProductVariationRequest request,
                                                     @AuthenticationPrincipal UserPrincipal userPrincipal) {
         return ResponseEntity.ok(productVariationService.updateProductVariation(variationId, request, userPrincipal.getId()));
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<?> viewAllOrders(
+            @AuthenticationPrincipal UserPrincipal user,
+            @RequestParam(defaultValue = "10") int max,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "dateCreated") String sort,
+            @RequestParam(defaultValue = "desc") String order
+    ) {
+        Sort.Direction direction = order.equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort));
+        return ResponseEntity.ok(orderService.viewSellerAllOrders(user.getId(), pageable));
+    }
+
+    @PatchMapping("/orders/update-status")
+    public  ResponseEntity<?> updateOrderStatus(@AuthenticationPrincipal UserPrincipal userPrincipal, @Valid @RequestBody UpdateOrderStatusRequest request){
+        return ResponseEntity.ok(orderService.updateOrderStatus(userPrincipal.getId(), request));
     }
 }

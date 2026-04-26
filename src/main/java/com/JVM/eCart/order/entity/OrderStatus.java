@@ -1,5 +1,6 @@
 package com.JVM.eCart.order.entity;
 
+import com.JVM.eCart.order.enums.OrderStatusEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -14,8 +15,11 @@ public class OrderStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String fromStatus;
-    private String toStatus;
+    @Enumerated(EnumType.STRING)
+    private OrderStatusEnum fromStatus;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatusEnum toStatus;
     private String transitionNotesComments;
     private LocalDateTime transitionDate;
 

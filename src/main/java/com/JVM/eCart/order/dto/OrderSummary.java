@@ -1,4 +1,12 @@
 package com.JVM.eCart.order.dto;
 
-public record OrderSummary() {
-}
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+public record OrderSummary(
+        Long orderId,
+        BigDecimal totalAmount,
+        String paymentMethod,
+        LocalDateTime dateCreated
+//        String currentStatus
+) { }

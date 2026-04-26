@@ -1,4 +1,11 @@
 package com.JVM.eCart.order.dto;
 
-public record OrderListResponse() {
-}
+import java.util.List;
+
+public record OrderListResponse(
+        List<OrderSummary> orders,
+        int page,
+        int size,
+        long totalElements
+
+) { }
