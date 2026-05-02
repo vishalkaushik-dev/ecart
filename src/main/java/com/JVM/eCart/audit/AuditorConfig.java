@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
@@ -21,8 +22,16 @@ public class AuditorConfig {
     }
 
     private String getCurrentUser() {
-        // Example: fetch from Spring Security
-        return SecurityContextHolder.getContext().getAuthentication().getName(); // replace with actual logic
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return "system";
+        }
+
+        String username = auth.getName();
+        return (username == null || username.equals("anonymousUser")) ? "system" : username;
+
     }
 
 }

@@ -2,6 +2,7 @@ package com.JVM.eCart.admin.service;
 
 import com.JVM.eCart.admin.dto.RegisteredCustomerResponse;
 import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
+import com.JVM.eCart.rabbitmq.EmailProducer;
 import com.JVM.eCart.user.entity.User;
 import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.user.repository.UserRepository;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.JVM.eCart.constants.EmailConstants.*;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -22,6 +25,7 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final EmailProducer emailProducer;
 
     public Page<RegisteredCustomerResponse> getAllRegisteredCustomers (int pageSize, int pageOffset, String sort, String email) {
 
@@ -57,7 +61,8 @@ public class AdminService {
         userRepository.save(user);
 
         String mailContent = "Dear " + user.getFirstName() + ",\n\nYour account has been activated. You can now log in and start shopping on our platform.\n\nBest regards,\nE-Cart Team";
-        emailService.sendMail(user.getEmail(), "Account Activated", mailContent);
+//        emailService.sendMail(user.getEmail(), "Account Activated", mailContent);
+        emailProducer.sendEmail(user.getEmail(), SUBJECT_ACCOUNT_ACTIVATED, mailContent); // through rabbitMQ
         return "Customer has been activated.";
     }
 
@@ -77,7 +82,8 @@ public class AdminService {
         userRepository.save(user);
 
         String mailContent = "Dear " + user.getFirstName() + ",\n\nYour account has been deactivated. Please contact support team to activate again.\n\nBest regards,\nE-Cart Team";
-        emailService.sendMail(user.getEmail(), "Account Deactivated", mailContent);
+//        emailService.sendMail(user.getEmail(), "Account Deactivated", mailContent);
+        emailProducer.sendEmail(user.getEmail(), SUBJECT_ACCOUNT_DEACTIVATED, mailContent);
         return "Customer has been deactivated.";
     }
 
@@ -97,7 +103,7 @@ public class AdminService {
         userRepository.save(user);
 
         String mailContent = "Dear " + user.getFirstName() + ",\n\nYour account has been activated. You can now log in and start shopping on our platform.\n\nBest regards,\nE-Cart Team";
-        emailService.sendMail(user.getEmail(), "Account Activated", mailContent);
+        emailService.sendMail(user.getEmail(), SUBJECT_ACCOUNT_ACTIVATED, mailContent);
         return "Seller has been activated.";
     }
 
@@ -117,7 +123,7 @@ public class AdminService {
         userRepository.save(user);
 
         String mailContent = "Dear " + user.getFirstName() + ",\n\nYour account has been deactivated. Please contact support team to activate again.\n\nBest regards,\nE-Cart Team";
-        emailService.sendMail(user.getEmail(), "Account Deactivated", mailContent);
+        emailService.sendMail(user.getEmail(), SUBJECT_ACCOUNT_DEACTIVATED, mailContent);
         return "Seller has been deactivated.";
     }
 

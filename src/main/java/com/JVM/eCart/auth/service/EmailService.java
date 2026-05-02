@@ -1,13 +1,16 @@
 package com.JVM.eCart.auth.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import static com.JVM.eCart.constants.EmailConstants.*;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -15,16 +18,16 @@ public class EmailService {
     @Async
     public void sendActivationEmail(String email, String token) {
 
-        String link = "http://localhost:8080/auth/activate?token=" + token;
+        String link = BASE_URL + ACTIVATE_PATH + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Activate Your Account");
-        message.setText("Click the link to activate your account:\n" + link);
+        message.setSubject(SUBJECT_ACTIVATE_ACCOUNT);
+        message.setText(MSG_ACTIVATE_ACCOUNT + link);
 
         mailSender.send(message);
 
-        System.out.println("Email sent to Customer on: " + email);
+        log.info("Email sent to Customer on: {}", email);
     }
 
     @Async
@@ -32,40 +35,40 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Seller Registration Received");
-        message.setText("Thank you for registering as a seller. Your application is under review. We will notify you once it's approved.");
+        message.setSubject(SUBJECT_SELLER_REGISTRATION);
+        message.setText(MSG_SELLER_REGISTRATION);
 
         mailSender.send(message);
 
-        System.out.println("Email sent to Seller on: " + email);
+        log.info("Email sent to Seller on: {}", email);
     }
 
     @Async
     public void sendAccountLockedEmail(String email) {
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("Account Locked");
-        message.setText("Your account has been locked due to multiple failed attempts");
+        message.setSubject(SUBJECT_ACCOUNT_LOCKED);
+        message.setText(MSG_ACCOUNT_LOCKED);
         message.setTo(email);
 
         mailSender.send(message);
 
-        System.out.println("Account locked email sent to: " + email);
+        log.info("Account locked email sent to: {}", email);
     }
 
     @Async
     public void sendResetPasswordLinkMail(String email, String token) {
 
-        String resetLink = "http://localhost:8080/auth/reset-password?token=" + token;
+        String resetLink = BASE_URL + RESET_PASSWORD_PATH + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("Reset Password");
-        message.setText("Click the link to reset your Password:\n" + resetLink);
+        message.setSubject(SUBJECT_RESET_PASSWORD);
+        message.setText(MSG_RESET_PASSWORD + resetLink);
         message.setTo(email);
 
         mailSender.send(message);
 
-        System.out.println("Reset Password email sent to: " + email);
+        log.info("Reset Password email sent to: {}", email);
     }
 
     @Async
@@ -73,12 +76,12 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Password Updated");
-        message.setText("Your password has been updated successfully");
+        message.setSubject(SUBJECT_PASSWORD_UPDATED);
+        message.setText(MSG_PASSWORD_UPDATED);
 
         mailSender.send(message);
 
-        System.out.println("Password update confirmation email sent to: " + email);
+        log.info("Password update confirmation email sent to: {}", email);
     }
 
     @Async

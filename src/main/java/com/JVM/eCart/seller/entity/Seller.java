@@ -16,8 +16,14 @@ public class Seller {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(unique = true)
     private String gst;
+
+    @Column(unique = true)
     private String companyContact;
+
+    @Column(unique = true)
     private String companyName;
+
     private String companyAddress;
 }

@@ -5,6 +5,7 @@ import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.customer.dto.AddAddressRequest;
 import com.JVM.eCart.customer.dto.UpdateCustomerProfileRequest;
 import com.JVM.eCart.seller.dto.AddressDto;
+import com.JVM.eCart.seller.dto.UpdateAddressRequest;
 import com.JVM.eCart.seller.dto.UpdatePasswordRequest;
 import com.JVM.eCart.seller.dto.UpdateSellerProfileRequest;
 import com.JVM.eCart.seller.entity.Seller;
@@ -88,11 +89,20 @@ public class UserService {
         return "Password updated successfully";
     }
 
-    public String updateAddress(Long addressId, AddressDto request) {
+    public String updateAddress(Long addressId, UpdateAddressRequest request) {
 
         User user = authService.getLoggedInUser();
 
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new RuntimeException("Address not found"));
+
+        if (addressRepository.existsByUserAndAddressLineIgnoreCaseAndCityIgnoreCaseAndStateIgnoreCaseAndCountryIgnoreCaseAndZipCodeIgnoreCase(
+                user,
+                request.addressLine(),
+                request.city(),
+                request.state(),
+                request.country(),
+                request.zipCode()
+        )) throw new RuntimeException("Address is already exists");
 
         if(!address.getUser().getId().equals(user.getId()))
             throw new RuntimeException("Unauthorized access to address");
@@ -124,8 +134,8 @@ public class UserService {
             user.setFirstName(request.firstName());
         if(request.lastName() != null)
             user.setLastName(request.lastName());
-        if(request.email() != null)
-            user.setEmail(request.email());
+//        if(request.email() != null)
+//            user.setEmail(request.email());
         if(request.phoneNumber() != null)
             user.setPhoneNumber(request.phoneNumber());
 
@@ -137,6 +147,15 @@ public class UserService {
     public String addCustomerNewAddress(AddAddressRequest request) {
 
         User user = authService.getLoggedInUser();
+
+        if (addressRepository.existsByUserAndAddressLineIgnoreCaseAndCityIgnoreCaseAndStateIgnoreCaseAndCountryIgnoreCaseAndZipCodeIgnoreCase(
+                user,
+                request.addressLine(),
+                request.city(),
+                request.state(),
+                request.country(),
+                request.zipCode()
+        )) throw new RuntimeException("Address is already exists");
 
         Address address = new Address();
         BeanUtils.copyProperties(request,address, "id");

@@ -48,6 +48,13 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(DuplicateValidationException.class)
+    public ResponseEntity<?> handleDuplicateException(DuplicateValidationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<?> handleBadRequest(BadRequestException ex) {
         return ResponseEntity.badRequest().body(Map.of(

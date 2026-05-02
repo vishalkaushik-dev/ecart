@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 @EnableAsync
 @EnableJpaAuditing
+@EnableCaching
 public class ECartApplication {
 
 	public static void main(String[] args) {

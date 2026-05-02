@@ -17,4 +17,6 @@ public interface CategoryMetadataFieldValuesRepository extends JpaRepository<Cat
     boolean existsByCategoryAndMetadataField(Category category, CategoryMetadataField field);
 
     Optional<CategoryMetadataFieldValue> findByCategoryAndMetadataField(Category category, CategoryMetadataField field);
+
+    Optional<CategoryMetadataFieldValue> findByCategory_IdAndMetadataField_Id(Long categoryId, Long metaDataFieldId);
 }

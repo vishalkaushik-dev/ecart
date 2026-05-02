@@ -29,15 +29,13 @@ public record CustomerRegisterRequest(
         String confirmPassword,
 
         @NotBlank(message = "First name is required")
+        @Pattern(
+                regexp = "^[A-Za-z]+( [A-Za-z]+)*$",
+                message = "Name must contain only letters and single spaces between words"
+        )
         String firstName,
 
         @NotBlank(message = "Last name is required")
         String lastName
 
-//        String addressLine,
-//        String city,
-//        String label,
-//        String state,
-//        String country,
-//        String zipCode
 ) {}

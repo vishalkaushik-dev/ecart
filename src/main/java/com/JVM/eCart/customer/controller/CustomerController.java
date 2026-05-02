@@ -12,6 +12,7 @@ import com.JVM.eCart.product.dto.CustomerProductResponse;
 import com.JVM.eCart.product.service.ProductService;
 import com.JVM.eCart.security.jwt.UserPrincipal;
 import com.JVM.eCart.seller.dto.AddressDto;
+import com.JVM.eCart.seller.dto.UpdateAddressRequest;
 import com.JVM.eCart.seller.dto.UpdatePasswordRequest;
 import com.JVM.eCart.user.service.UserService;
 import jakarta.validation.Valid;
@@ -57,7 +58,7 @@ public class CustomerController {
     }
 
     @PatchMapping("/address/{id}")
-    public ResponseEntity<?> updateAddress(@PathVariable Long id, @Valid @RequestBody AddressDto request) {
+    public ResponseEntity<?> updateAddress(@PathVariable Long id, @Valid @RequestBody UpdateAddressRequest request) {
         return ResponseEntity.ok(userService.updateAddress(id, request));
     }
 

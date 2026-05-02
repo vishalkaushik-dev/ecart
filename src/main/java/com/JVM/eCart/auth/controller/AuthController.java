@@ -6,6 +6,8 @@ import com.JVM.eCart.auth.dto.ResetPasswordRequest;
 import com.JVM.eCart.auth.dto.SellerRegisterRequest;
 import com.JVM.eCart.auth.service.IAuthService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +51,12 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+    public ResponseEntity<?> forgotPassword(@RequestParam
+                                                @Email(message = "Invalid email format")
+                                                @Pattern(
+                                                        regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+                                                        message = "Email must contain a valid domain (e.g., .com, .in)"
+                                                ) String email) {
         return ResponseEntity.ok(authServiceImpl.forgotPassword(email));
     }
 

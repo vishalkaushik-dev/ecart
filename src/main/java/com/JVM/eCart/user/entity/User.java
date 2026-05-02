@@ -5,6 +5,7 @@ import com.JVM.eCart.auth.entity.Role;
 import com.JVM.eCart.customer.entity.Customer;
 import com.JVM.eCart.seller.entity.Seller;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -27,8 +28,16 @@ public class User extends Auditable {
 
     private String password;
 
+    @Pattern(
+            regexp = "^[A-Za-z]+( [A-Za-z]+)*$",
+            message = "Name must contain only letters and single spaces between words"
+    )
     private String firstName;
 
+    @Pattern(
+            regexp = "^[A-Za-z]+( [A-Za-z]+)*$",
+            message = "Name must contain only letters and single spaces between words"
+    )
     private String lastName;
 
     @Column(unique = true)

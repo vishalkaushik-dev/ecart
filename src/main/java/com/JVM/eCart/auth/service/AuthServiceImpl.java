@@ -289,12 +289,17 @@ public class AuthServiceImpl implements  IAuthService {
 
         ForgotPasswordToken token = forgotPasswordTokenRepository.findByToken(requestToken).orElseThrow(() -> new RuntimeException("Invalid token"));
 
+        User user = token.getUser();
+        String currentPassword = user.getPassword();
+
+        if(request.password().equals(currentPassword))
+            throw new RuntimeException("New password should be different from old password");
+
         if(token.getExpiryDate().isBefore(LocalDateTime.now())) {
             forgotPasswordTokenRepository.delete(token);
             throw new RuntimeException("Token has been expired");
         }
 
-        User user = token.getUser();
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setPasswordUpdateDate(LocalDateTime.now());
         userRepository.save(user);

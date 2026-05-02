@@ -1,6 +1,7 @@
 package com.JVM.eCart.category.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Entity
@@ -13,6 +14,10 @@ public class Category {
     private Long id;
 
     @Column(unique = true)
+    @Pattern(
+            regexp = "^[A-Za-z]+( [A-Za-z]+)*$",
+            message = "Name must contain only letters and single spaces between words"
+    )
     private String name; // shirt, shoes
 
     // Self referencing for parent category

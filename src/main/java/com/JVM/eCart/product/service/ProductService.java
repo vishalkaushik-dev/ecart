@@ -13,6 +13,8 @@ import com.JVM.eCart.seller.entity.Seller;
 import com.JVM.eCart.seller.repository.SellerRepository;
 import com.JVM.eCart.user.entity.User;
 import lombok.AllArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
+import static com.JVM.eCart.constants.EmailConstants.*;
 @Service
 @AllArgsConstructor
 public class ProductService {
@@ -34,6 +36,7 @@ public class ProductService {
     private final ProductVariationRepository variationRepository;
 
     @Transactional
+    @CacheEvict(value = "productList", allEntries = true)
     public String addProduct(AddProductRequest request, Long userId) {
 
         Seller seller = sellerRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Seller not found"));
@@ -68,8 +71,8 @@ public class ProductService {
 
         // send email to Admin
         emailService.sendMail(
-                "vishal.kaushik@tothenew.com",
-                "Product Added: " + product.getName(),
+                ADMIN_EMAIL,
+                SUBJECT_PRODUCT_ADDED + product.getName(),
                 "New product '" + product.getName() + "' has been added by Seller: "+ seller.getUser().getEmail() +  " and is pending approval."
         );
         return "Product added successfully";
@@ -124,6 +127,7 @@ public class ProductService {
         ));
     }
 
+    @CacheEvict(value = "productList", allEntries = true)
     public String deleteProduct(Long productId, Long userId) {
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
@@ -141,6 +145,7 @@ public class ProductService {
         return "Product deleted successfully";
     }
 
+    @CacheEvict(value = "productList", allEntries = true)
     public String updateProduct(Long productId, UpdateProductRequest request, Long userId) {
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Invalid Product Id"));
@@ -215,7 +220,11 @@ public class ProductService {
         );
     }
 
-    public Page<CustomerAllProductsResponse> getAllProductsCustomerView(Long categoryId, String query, Pageable pageable) {
+    @Cacheable(
+            value = "customerProductList",
+            key = "#categoryId + '_' + (#query != null ? #query : '') + '_' + #pageable.pageNumber + '_' + #pageable.pageSize"
+    )
+    public PageResponse<CustomerAllProductsResponse> getAllProductsCustomerView(Long categoryId, String query, Pageable pageable) {
 
         Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("Invalid category"));
 
@@ -224,7 +233,18 @@ public class ProductService {
 
         Page<Product> products = productRepository.findAllProducts(categoryId, query,pageable);
 
-        return products.map(this::mapToAllProductCustomerResponse);
+        List<CustomerAllProductsResponse> content = products.getContent()
+                .stream()
+                .map(this::mapToAllProductCustomerResponse)
+                .toList();
+
+        return new PageResponse<>(
+                content,
+                products.getTotalElements(),
+                products.getTotalPages(),
+                products.getNumber(),
+                products.getSize()
+        );
     }
 
     public Page<CustomerAllProductsResponse> getSimilarProducts(Long productId, String query, Pageable pageable) {
@@ -307,6 +327,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "productList", allEntries = true)
     public String deactivateProduct(Long productId) {
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
@@ -322,6 +343,7 @@ public class ProductService {
     }
 
     @Transactional
+    @CacheEvict(value = "productList", allEntries = true)
     public String activateProduct(Long productId) {
 
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));

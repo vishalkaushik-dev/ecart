@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class LoginAttemptService {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Boolean handleInvalidAttempt(Long userId) {
@@ -22,6 +23,8 @@ public class LoginAttemptService {
 
         if (user.getInvalidAttemptCount() >= 3) {
             user.setLocked(true);
+            String mailContent = "Dear " + user.getFirstName() + ",\n\nYour account has been locked. Please connect admin team to unlock your account.\n\nBest regards,\nE-Cart Team";
+            emailService.sendMail(user.getEmail(), "Account Locked", mailContent);
         }
 
         userRepository.save(user);

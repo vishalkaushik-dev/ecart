@@ -8,6 +8,7 @@ import com.JVM.eCart.category.repository.CategoryMetaDataFieldRepository;
 import com.JVM.eCart.category.repository.CategoryMetadataFieldValuesRepository;
 import com.JVM.eCart.category.repository.CategoryRepository;
 import com.JVM.eCart.common.exception.BadRequestException;
+import com.JVM.eCart.common.exception.DuplicateValidationException;
 import com.JVM.eCart.product.entity.Product;
 import com.JVM.eCart.product.entity.ProductVariation;
 import com.JVM.eCart.product.repository.ProductRepository;
@@ -74,7 +75,7 @@ public class CategoryService {
         Long parentId = request.parentId();
 
         if (categoryRepository.existsByNameAndParentCategory_Id(request.name(), parentId))
-            throw new BadRequestException("Duplicate category");
+            throw new DuplicateValidationException("Duplicate category");
 
         Category category = new Category();
         category.setName(request.name());
@@ -156,38 +157,85 @@ public class CategoryService {
     @Transactional
     public String addMetadataFieldValuesWithCategory(CategoryMetadataFieldValuesRequest request) {
 
-        // Validate Category
-        Category category = categoryRepository.findById(request.categoryId()).orElseThrow(() -> new RuntimeException("Category not found"));
-        for(FieldValuesDto field : request.fields()) {
+        Category category = categoryRepository.findById(request.categoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        for (FieldValuesDto field : request.fields()) {
 
             CategoryMetadataField metaField = categoryMetaDataFieldRepository.findById(field.fieldId())
                     .orElseThrow(() -> new RuntimeException("Invalid Field ID"));
 
-            // Check for duplicate values for the same field and category
-            for (String value : field.values()) {
-                boolean exists = categoryMetadataFieldValuesRepository.existsByCategory_IdAndMetadataField_IdAndValuesIgnoreCase(category.getId(), metaField.getId(), value);
-                if (exists) {
-                    throw new RuntimeException("Duplicate value '" + value + "' for field '" + metaField.getName() + "' in category '" + category.getName() + "'");
-                }
-            }
-
-            // Validate value list
             List<String> values = field.values();
-            if(values.isEmpty())
+            if (values == null || values.isEmpty()) {
                 throw new RuntimeException("Values cannot be empty for field '" + metaField.getName() + "'");
-
-            // Check Unique values
-            Set<String> uniqueValues = new HashSet<>(values);
-            if (uniqueValues.size() != values.size()) {
-                throw new RuntimeException("Duplicate values not allowed");
             }
 
-            // save valuesss in DB
-            CategoryMetadataFieldValue categoryMetadataFieldValue = new CategoryMetadataFieldValue();
-            categoryMetadataFieldValue.setCategory(category);
-            categoryMetadataFieldValue.setMetadataField(metaField);
-            categoryMetadataFieldValue.setValues(String.join(",", uniqueValues));
-            categoryMetadataFieldValuesRepository.save(categoryMetadataFieldValue);
+            // Normalize + trim + validate input values
+            Set<String> normalizedInput = new HashSet<>();
+            Set<String> cleanedInput = new LinkedHashSet<>();
+
+            for (String val : values) {
+                String trimmed = val.trim();
+
+                if (trimmed.isEmpty()) {
+                    throw new RuntimeException("Empty string not allowed in values");
+                }
+
+                String normalized = trimmed.toLowerCase();
+
+                if (!normalizedInput.add(normalized)) {
+                    throw new DuplicateValidationException("Duplicate value in request: " + val);
+                }
+
+                cleanedInput.add(trimmed);
+            }
+
+            Optional<CategoryMetadataFieldValue> existingFieldValue =
+                    categoryMetadataFieldValuesRepository
+                            .findByCategory_IdAndMetadataField_Id(category.getId(), metaField.getId());
+
+            if (existingFieldValue.isPresent()) {
+
+                CategoryMetadataFieldValue fieldValue = existingFieldValue.get();
+
+                Set<String> normalizedSet = new HashSet<>();
+                Set<String> finalList = new LinkedHashSet<>();
+
+                // Existing values
+                if (fieldValue.getValues() != null && !fieldValue.getValues().isEmpty()) {
+                    for (String val : fieldValue.getValues().split(",")) {
+                        String trimmed = val.trim();
+                        String normalized = trimmed.toLowerCase();
+
+                        normalizedSet.add(normalized);
+                        finalList.add(trimmed);
+                    }
+                }
+
+                // Add new values
+                for (String val : cleanedInput) {
+                    String normalized = val.toLowerCase();
+
+                    if (!normalizedSet.add(normalized)) {
+                        throw new RuntimeException("Value already exists: " + val);
+                    }
+
+                    finalList.add(val);
+                }
+
+                fieldValue.setValues(String.join(",", finalList));
+                categoryMetadataFieldValuesRepository.save(fieldValue);
+
+            } else {
+
+                // Create new entry
+                CategoryMetadataFieldValue newFieldValue = new CategoryMetadataFieldValue();
+                newFieldValue.setCategory(category);
+                newFieldValue.setMetadataField(metaField);
+                newFieldValue.setValues(String.join(",", cleanedInput));
+
+                categoryMetadataFieldValuesRepository.save(newFieldValue);
+            }
         }
         return "Metadata values added successfully to category";
     }
@@ -211,21 +259,34 @@ public class CategoryService {
             if(newValues.isEmpty())
                 throw new RuntimeException("Values cannot be empty for field '" + metaField.getName() + "'");
 
-            // Convert existing values to Set
-            Set<String> finalValues = new HashSet<>();
-            if(existingFieldValue != null) {
-                finalValues.addAll(Arrays.asList(existingFieldValue.getValues().split(",")));
-            }
+            // Set for duplicate check (normalized)
+            Set<String> normalizedSet = new HashSet<>();
 
-            // Add new values to Set
-            for (String val : newValues) {
-                if (!finalValues.add(val)) {
-                    throw new RuntimeException("Duplicate value: " + val);
+            // List to preserve original values
+            Set<String> finalList = new HashSet<>();
+            if(existingFieldValue.getValues() != null) {
+                for (String val : existingFieldValue.getValues().split(",")) {
+                    String trimmed = val.trim();
+                    String normalized = trimmed.toLowerCase();
+
+                    normalizedSet.add(normalized);
+                    finalList.add(trimmed);
                 }
             }
 
+            // Add new values to existing list
+            for (String val : newValues) {
+                String trimmed = val.trim();
+                String normalized = trimmed.toLowerCase();
+
+                if(!normalizedSet.add(normalized))
+                    throw new DuplicateValidationException("Duplicate value: " + val);
+
+                finalList.add(trimmed);
+            }
+
             // save back the entity that we fetched
-            existingFieldValue.setValues(String.join(",", finalValues));
+            existingFieldValue.setValues(String.join(",", finalList));
             categoryMetadataFieldValuesRepository.save(existingFieldValue);
         }
         return "Metadata values updated successfully";

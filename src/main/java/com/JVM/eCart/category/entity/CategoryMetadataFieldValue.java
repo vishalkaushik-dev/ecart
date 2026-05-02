@@ -1,13 +1,14 @@
 package com.JVM.eCart.category.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Entity
 @Table(
         name = "category_metadata_field_values",
         uniqueConstraints = @UniqueConstraint(
-                columnNames = {"category_id", "category_metadata_field_id", "value"}
+                columnNames = {"category_id", "category_metadata_field_id", "values"}
         )
 )
 @Data
@@ -17,6 +18,10 @@ public class CategoryMetadataFieldValue {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Pattern(
+            regexp = "^[A-Za-z]+(,[A-Za-z]+)*$",
+            message = "Values must be comma-separated without spaces"
+    )
     private String values; // M, L ,XL,
 
     @ManyToOne
