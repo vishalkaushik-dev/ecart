@@ -38,10 +38,6 @@ public class UserService {
 
         User user = authService.getLoggedInUser();
 
-        // update user fields
-        if(request.email() != null)
-            user.setEmail(request.email());
-
         if (request.firstName() != null)
             user.setFirstName(request.firstName());
 
@@ -52,15 +48,8 @@ public class UserService {
         Seller seller = user.getSeller();
 
         if (seller != null) {
-            if (request.companyName() != null)
-                seller.setCompanyName(request.companyName());
-
             if (request.companyContact() != null)
                 seller.setCompanyContact(request.companyContact());
-
-            if (request.gst() != null)
-                seller.setGst(request.gst());
-
             sellerRepository.save(seller);
         }
         userRepository.save(user);

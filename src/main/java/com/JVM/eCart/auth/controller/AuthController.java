@@ -1,9 +1,6 @@
 package com.JVM.eCart.auth.controller;
 
-import com.JVM.eCart.auth.dto.CustomerRegisterRequest;
-import com.JVM.eCart.auth.dto.LoginRequest;
-import com.JVM.eCart.auth.dto.ResetPasswordRequest;
-import com.JVM.eCart.auth.dto.SellerRegisterRequest;
+import com.JVM.eCart.auth.dto.*;
 import com.JVM.eCart.auth.service.IAuthService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -63,5 +60,10 @@ public class AuthController {
     @PutMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest resetPasswordRequest, @RequestParam String token) {
         return ResponseEntity.ok(authServiceImpl.resetPassword(resetPasswordRequest,token));
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResponse> refreshToken(@RequestBody TokenRefreshRequest request) {
+        return ResponseEntity.ok(authServiceImpl.refreshToken(request.refreshToken()));
     }
 }

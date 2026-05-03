@@ -27,7 +27,7 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String jwtSecret;
 
-    @Value("${jwt.expirationMs}")
+    @Value("${jwt.accessToken.expirationMs}")
     private long jwtExpirationMs;
 
     private SecretKey key;
@@ -121,8 +121,8 @@ public class JwtTokenProvider {
         return claims.get("userId", Long.class);
     }
 
-    public String getActiveToken(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        return user.getActiveToken();
-    }
+//    public String getActiveToken(Long userId) {
+//        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+//        return user.getActiveToken();
+//    }
 }

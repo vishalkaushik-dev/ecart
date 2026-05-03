@@ -1,25 +1,26 @@
 package com.JVM.eCart.auth.entity;
 
-import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.user.entity.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
-@Data
-public class VerificationToken extends Auditable {
+@Getter
+@Setter
+public class RefreshToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String token;
 
-    @Column(nullable = false)
-    private LocalDateTime expiryDate;
+    private Instant expiryDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     private User user;
 }

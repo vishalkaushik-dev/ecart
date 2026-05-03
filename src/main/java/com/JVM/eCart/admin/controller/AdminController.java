@@ -5,7 +5,11 @@ import com.JVM.eCart.admin.dto.RegisteredSellerResponse;
 import com.JVM.eCart.admin.service.AdminService;
 import com.JVM.eCart.category.dto.*;
 import com.JVM.eCart.category.service.CategoryService;
+import com.JVM.eCart.order.dto.OrderResponse;
+import com.JVM.eCart.order.service.OrderService;
+import com.JVM.eCart.product.dto.PageResponse;
 import com.JVM.eCart.product.service.ProductService;
+import com.JVM.eCart.security.jwt.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -13,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +33,7 @@ public class AdminController {
     private final AdminService adminService;
     private final CategoryService categoryService;
     private final ProductService productService;
+    private final OrderService orderService;
 
     @GetMapping("/registered-customers")
     public ResponseEntity<?> getRegisteredCustomers(@RequestParam(defaultValue = "10") int pageSize,
@@ -171,5 +177,22 @@ public class AdminController {
     @PutMapping("/products/{productId}/activate")
     public ResponseEntity<?> activateProduct(@PathVariable Long productId) {
         return ResponseEntity.ok(productService.activateProduct(productId));
+    }
+
+    @GetMapping("/orders")
+    public PageResponse<OrderResponse> getAllOrders(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int max,
+            @RequestParam(defaultValue = "dateCreated") String sort,
+            @RequestParam(defaultValue = "desc") String order
+    ) {
+        Sort.Direction direction = order.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort));
+
+        return orderService.viewAdminAllOrders(pageable, query);
     }
 }

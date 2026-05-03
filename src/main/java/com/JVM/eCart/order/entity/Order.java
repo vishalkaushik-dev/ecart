@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -35,4 +36,7 @@ public class Order extends Auditable {
     private String addressLine;
     private String zipCode;
     private String label;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderProduct> orderProducts;
 }

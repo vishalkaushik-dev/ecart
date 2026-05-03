@@ -1,5 +1,6 @@
 package com.JVM.eCart.auth.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-public class ForgotPasswordToken {
+public class ForgotPasswordToken extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

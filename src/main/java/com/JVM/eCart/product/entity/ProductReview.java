@@ -1,12 +1,13 @@
 package com.JVM.eCart.product.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Table(name = "product_review")
 @Data
-public class ProductReview {
+public class ProductReview extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

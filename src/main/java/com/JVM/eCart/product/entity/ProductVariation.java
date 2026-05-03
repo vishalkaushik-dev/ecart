@@ -1,5 +1,6 @@
 package com.JVM.eCart.product.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import jakarta.persistence.*;
@@ -13,7 +14,7 @@ import java.util.Map;
 @Entity
 @Table(name = "product_variation")
 @Data
-public class ProductVariation {
+public class ProductVariation extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

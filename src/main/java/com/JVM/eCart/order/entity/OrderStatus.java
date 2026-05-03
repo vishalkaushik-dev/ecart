@@ -1,5 +1,6 @@
 package com.JVM.eCart.order.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.order.enums.OrderStatusEnum;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "order_status")
 @Data
-public class OrderStatus {
+public class OrderStatus extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,5 +1,6 @@
 package com.JVM.eCart.order.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import com.JVM.eCart.order.enums.OrderStatusEnum;
 import com.JVM.eCart.product.entity.ProductVariation;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "order_product")
 @Data
-public class OrderProduct {
+public class OrderProduct extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

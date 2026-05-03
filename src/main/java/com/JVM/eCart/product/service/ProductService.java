@@ -82,6 +82,9 @@ public class ProductService {
 
         Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
 
+        if(Boolean.TRUE.equals(product.getIsDeleted()))
+            throw new RuntimeException("Product is deleted, you can't view it.");
+
         Seller seller = sellerRepository.findByUser_Id(userId).orElseThrow(() -> new RuntimeException("Seller not found"));
 
         System.out.println("Product Seller: " + product.getSeller().getUser().getEmail());
@@ -106,16 +109,16 @@ public class ProductService {
         );
     }
 
-    public Page<ProductResponseDto> getAllProducts(String productName, Pageable pageable, Long userId, String sellerEmail) {
+    public PageResponse<ProductResponseDto> getAllProducts(String productName, Pageable pageable, Long userId, String sellerEmail) {
 
-        Page<Product> products;
+        Page<Product> pageData;
         if(productName != null && !productName.isBlank()) {
-            products = productRepository.findByNameIgnoreCaseAndSeller_User_IdAndIsDeletedFalse(productName, userId, pageable);
+            pageData = productRepository.findByNameIgnoreCaseAndSeller_User_IdAndIsDeletedFalse(productName, userId, pageable);
         } else {
-            products = productRepository.findBySeller_User_IdAndIsDeletedFalse(userId, pageable);
+            pageData = productRepository.findBySeller_User_IdAndIsDeletedFalse(userId, pageable);
         }
 
-        return products.map(product -> new ProductResponseDto(
+        List<ProductResponseDto> content = pageData.map(product -> new ProductResponseDto(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
@@ -124,7 +127,15 @@ public class ProductService {
                 product.getIsDeleted(),
                 mapCategory(product.getCategory()),
                 sellerEmail
-        ));
+        )).getContent();
+
+        return new PageResponse<>(
+                content,
+                pageData.getTotalElements(),
+                pageData.getTotalPages(),
+                pageData.getNumber(),
+                pageData.getSize()
+        );
     }
 
     @CacheEvict(value = "productList", allEntries = true)
@@ -333,7 +344,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
         if(Boolean.FALSE.equals(product.getIsActive()))
-            throw new RuntimeException("Product is already inactive");
+            return "Product is already inactive";
 
         product.setIsActive(false);
         productRepository.save(product);
@@ -349,7 +360,7 @@ public class ProductService {
         Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
 
         if(Boolean.TRUE.equals(product.getIsActive()))
-            throw new RuntimeException("Product is already active");
+            return "Product is already active";
 
         product.setIsActive(true);
         productRepository.save(product);

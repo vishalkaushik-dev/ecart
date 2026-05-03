@@ -17,7 +17,7 @@ import java.util.Set;
 @Entity
 @Data
 @Table(name = "users")
-public class User extends Auditable {
+public class User extends Auditable  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,9 +55,6 @@ public class User extends Auditable {
     private boolean isBootstrapAdmin = false;
 
     private LocalDateTime passwordUpdateDate;
-
-    @Column(columnDefinition = "TEXT")
-    private String activeToken;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

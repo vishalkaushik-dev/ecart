@@ -12,15 +12,17 @@ import com.JVM.eCart.order.repository.CartRepository;
 import com.JVM.eCart.order.repository.OrderProductRepository;
 import com.JVM.eCart.order.repository.OrderRepository;
 import com.JVM.eCart.order.repository.OrderStatusRepository;
+import com.JVM.eCart.order.specification.OrderSpecification;
+import com.JVM.eCart.product.dto.PageResponse;
 import com.JVM.eCart.product.entity.ProductVariation;
 import com.JVM.eCart.product.repository.ProductVariationRepository;
-import com.JVM.eCart.seller.dto.AddressDto;
 import com.JVM.eCart.user.entity.Address;
 import com.JVM.eCart.user.repository.AddressRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -290,10 +292,10 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SellerOrderResponse> viewSellerAllOrders(Long userId, Pageable pageable) {
+    public Page<OrderResponse> viewSellerAllOrders(Long userId, Pageable pageable) {
 
         Page<Order> orders = orderRepository.findOrdersBySellerUserId(userId, pageable);
-        return orders.map(order -> mapToResponse(order, userId));
+        return orders.map(order -> mapToSellerOrderResponse(order, userId));
     }
 
     @Transactional()
@@ -329,7 +331,59 @@ public class OrderService {
         return "Order status updated successfully";
     }
 
-    private SellerOrderResponse mapToResponse(Order order, Long userId) {
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> viewAdminAllOrders(Pageable pageable, String query) {
+
+        Specification<Order> spec = OrderSpecification.search(query);
+
+        Page<Order> orders;
+
+        if (query == null || query.isBlank()) {
+            orders = orderRepository.findAll(spec,pageable);
+        } else {
+            orders = orderRepository.searchOrders(query, pageable);
+        }
+
+        List<OrderResponse> orderContent = orders.getContent()
+                .stream()
+                .map(order -> mapToAdminOrderResponse(order))
+                .toList();
+
+        return new PageResponse<>(
+                orderContent,
+                orders.getTotalElements(),
+                orders.getTotalPages(),
+                orders.getNumber(),
+                orders.getSize()
+        );
+    }
+
+    private OrderResponse mapToAdminOrderResponse(Order order) {
+
+        List<SellerOrderItem> items = orderProductRepository
+                .findByOrder(order)
+                .stream()
+                .map(op -> new SellerOrderItem(
+                        op.getId(),
+                        op.getQuantity(),
+                        op.getPrice(),
+                        op.getProductVariation().getProduct().getName(),
+                        op.getProductVariation().getProduct().getBrand(),
+                        op.getProductVariation().getPrimaryImage(),
+                        op.getCurrentStatus()
+                ))
+                .toList();
+
+        return new OrderResponse(
+                order.getId(),
+                order.getAmountPaid(),
+                order.getDateCreated(),
+                order.getPaymentMethod(),
+                items
+        );
+    }
+
+    private OrderResponse mapToSellerOrderResponse(Order order, Long userId) {
 
         List<SellerOrderItem> items = orderProductRepository
                 .findByOrder(order)
@@ -351,7 +405,7 @@ public class OrderService {
                 ))
                 .toList();
 
-        return new SellerOrderResponse(
+        return new OrderResponse(
                 order.getId(),
                 order.getAmountPaid(),
                 order.getDateCreated(),

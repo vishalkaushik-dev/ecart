@@ -14,9 +14,9 @@ public record SellerRegisterRequest(
         )
         String email,
 
-        @NotBlank(message = "Phone number is required")
-        @Pattern(regexp = "\\d{10}", message = "Phone number must be 10 digits")
-        String phoneNumber,
+        @NotBlank(message = "Company Contact number is required")
+        @Pattern(regexp = "\\d{10}", message = "Company Contact number must be 10 digits")
+        String companyContact,
 
         @NotBlank(message = "Password is required")
         @Pattern(
@@ -31,7 +31,7 @@ public record SellerRegisterRequest(
         @NotBlank(message = "First name is required")
         @Pattern(
                 regexp = "^[A-Za-z]+( [A-Za-z]+)*$",
-                message = "Name must contain only letters and single spaces between words"
+                message = "Name must contain only letters and is required"
         )
         String firstName,
 
@@ -49,12 +49,23 @@ public record SellerRegisterRequest(
         String companyName,
 
         @NotBlank(message = "Company address is required")
-        String companyAddress
+        String companyAddress,
 
-//        String addressLine,
-//        String city,
-//        String label,
-//        String state,
-//        String country,
-//        String zipCode
+        @NotBlank(message = "Address is required")
+        String addressLine,
+
+        @NotBlank(message = "City is required")
+        String city,
+
+        @NotBlank(message = "Label is required")
+        String label,
+
+        @NotBlank(message = "State is required")
+        String state,
+
+        @NotBlank(message = "Country is required")
+        String country,
+
+        @NotBlank(message = "Zip code is required")
+        String zipCode
 ) {}

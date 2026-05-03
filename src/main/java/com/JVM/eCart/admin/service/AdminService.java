@@ -8,6 +8,7 @@ import com.JVM.eCart.auth.service.EmailService;
 import com.JVM.eCart.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +27,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final EmailProducer emailProducer;
+    private final MessageSource messageSource;
 
     public Page<RegisteredCustomerResponse> getAllRegisteredCustomers (int pageSize, int pageOffset, String sort, String email) {
 

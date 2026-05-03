@@ -1,11 +1,12 @@
 package com.JVM.eCart.user.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Data
-public class Address {
+public class Address extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

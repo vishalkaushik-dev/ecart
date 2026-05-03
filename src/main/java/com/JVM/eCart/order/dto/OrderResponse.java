@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record SellerOrderResponse(
+public record OrderResponse(
         Long orderId,
         BigDecimal amountPaid,
         LocalDateTime dateCreated,

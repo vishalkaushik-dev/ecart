@@ -82,7 +82,7 @@ public class SellerController {
     }
 
     @GetMapping("/product")
-    public Page<ProductResponseDto> getAllProducts(@RequestParam(defaultValue = "10") int pageSize,
+    public PageResponse<ProductResponseDto> getAllProducts(@RequestParam(defaultValue = "10") int pageSize,
                                                    @RequestParam(defaultValue = "0") int pageOffset,
                                                    @RequestParam(defaultValue = "id") String sort,
                                                    @RequestParam(defaultValue = "ASC", required = false) String order,
@@ -96,7 +96,7 @@ public class SellerController {
     }
 
     @GetMapping("/product-variation")
-    public Page<ProductVariationResponse> getAllProductVariation(@RequestParam(defaultValue = "10") int pageSize,
+    public PageResponse<ProductVariationResponse> getAllProductVariation(@RequestParam(defaultValue = "10") int pageSize,
                                                                  @RequestParam(defaultValue = "0") int pageOffset,
                                                                  @RequestParam(defaultValue = "id") String sort,
                                                                  @RequestParam(defaultValue = "ASC", required = false) String order,

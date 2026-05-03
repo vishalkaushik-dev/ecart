@@ -1,5 +1,6 @@
 package com.JVM.eCart.category.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -12,7 +13,7 @@ import lombok.Data;
         )
 )
 @Data
-public class CategoryMetadataFieldValue {
+public class CategoryMetadataFieldValue extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

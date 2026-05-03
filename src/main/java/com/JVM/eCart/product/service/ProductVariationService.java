@@ -4,6 +4,7 @@ import com.JVM.eCart.category.entity.Category;
 import com.JVM.eCart.category.entity.CategoryMetadataFieldValue;
 import com.JVM.eCart.category.repository.CategoryMetadataFieldValuesRepository;
 import com.JVM.eCart.product.dto.AddProductVariationRequest;
+import com.JVM.eCart.product.dto.PageResponse;
 import com.JVM.eCart.product.dto.ProductVariationResponse;
 import com.JVM.eCart.product.dto.UpdateProductVariationRequest;
 import com.JVM.eCart.product.entity.Product;
@@ -12,6 +13,7 @@ import com.JVM.eCart.product.repository.ProductRepository;
 import com.JVM.eCart.product.repository.ProductVariationRepository;
 import com.JVM.eCart.user.entity.User;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.parameters.P;
@@ -22,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class ProductVariationService {
@@ -36,6 +39,8 @@ public class ProductVariationService {
         // 1. Validate Product
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+//        ProductVariation productVariation = variationRepository.findByProduct_Id(request.productId()).orElseThrow(() -> new RuntimeException("Product variation ID not found"));
 
         if (Boolean.TRUE.equals(product.getIsDeleted())) {
             throw new RuntimeException("Product is deleted");
@@ -125,17 +130,17 @@ public class ProductVariationService {
         );
     }
 
-    public Page<ProductVariationResponse> getAllProductVariation(Long productVariationId, Pageable pageable, Long sellerUserId) {
+    public PageResponse<ProductVariationResponse> getAllProductVariation(Long productVariationId, Pageable pageable, Long sellerUserId) {
 
 
-        Page<ProductVariation> allProductVariations;
+        Page<ProductVariation> pageData;
         if(productVariationId != null) {
-            allProductVariations = variationRepository.findAllByIdAndSellerUserId(sellerUserId, productVariationId, pageable);
+            pageData = variationRepository.findAllByIdAndSellerUserId(sellerUserId, productVariationId, pageable);
         } else {
-            allProductVariations = variationRepository.findAllBySellerUserId(sellerUserId, pageable);
+            pageData = variationRepository.findAllBySellerUserId(sellerUserId, pageable);
         }
 
-        return allProductVariations.map(v -> new ProductVariationResponse(
+        List<ProductVariationResponse> content = pageData.map(v -> new ProductVariationResponse(
                 v.getId(),
                 v.getPrice(),
                 v.getQuantityAvailable(),
@@ -146,7 +151,15 @@ public class ProductVariationService {
                 v.getProduct().getId(),
                 v.getProduct().getName(),
                 v.getProduct().getDescription()
-        ));
+        )).getContent();
+
+        return new PageResponse<>(
+                content,
+                pageData.getTotalElements(),
+                pageData.getTotalPages(),
+                pageData.getNumber(),
+                pageData.getSize()
+        );
     }
 
     public String updateProductVariation(Long variationId, UpdateProductVariationRequest request, Long userId) {

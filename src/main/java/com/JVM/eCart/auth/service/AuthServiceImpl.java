@@ -18,7 +18,11 @@ import com.JVM.eCart.user.repository.AddressRepository;
 import com.JVM.eCart.user.repository.UserRepository;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,11 +32,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 @Transactional
+@Slf4j
 public class AuthServiceImpl implements  IAuthService {
 
     private final UserRepository userRepository;
@@ -48,6 +54,8 @@ public class AuthServiceImpl implements  IAuthService {
     private final AddressRepository addressRepository;
     private final UtilsHelper utilsHelper;
     private final LoginAttemptService loginAttemptService;
+    private final MessageSource messageSource;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public String registerCustomer(CustomerRegisterRequest customerRegisterRequest) {
@@ -71,13 +79,13 @@ public class AuthServiceImpl implements  IAuthService {
         user.setPasswordUpdateDate(LocalDateTime.now());
         userRepository.save(user);
 
-        // Add address in address table
+//         Add address in address table
 //        Address address = new Address();
 //        BeanUtils.copyProperties(customerRegisterRequest, address);
 //        address.setUser(user);
 //        addressRepository.save(address);
 
-        // Create Customer
+//         Create Customer
         Customer customer = new Customer();
         customer.setUser(user);
         customerRepository.save(customer);
@@ -92,7 +100,15 @@ public class AuthServiceImpl implements  IAuthService {
 
         emailService.sendActivationEmail(user.getEmail(), token);
 
-        return "User registered successfully, Activation link has been sent to your email.";
+        Locale locale = LocaleContextHolder.getLocale();
+
+         String msg = messageSource.getMessage(
+                "register.msg.customer",
+                null,
+                locale
+        );
+
+        return msg;
     }
 
     @Override
@@ -188,10 +204,10 @@ public class AuthServiceImpl implements  IAuthService {
         userRepository.save(user);
 
         // Add address in address table
-//        Address address = new Address();
-//        BeanUtils.copyProperties(sellerRegisterRequest, address);
-//        address.setUser(user);
-//        addressRepository.save(address);
+        Address address = new Address();
+        BeanUtils.copyProperties(sellerRegisterRequest, address);
+        address.setUser(user);
+        addressRepository.save(address);
 
         Seller seller = new Seller();
         BeanUtils.copyProperties(sellerRegisterRequest, seller);
@@ -200,7 +216,15 @@ public class AuthServiceImpl implements  IAuthService {
 
         emailService.sendSellerRegistrationEmail(sellerRegisterRequest.email());
 
-        return "Seller registered successfully. Awaiting admin approval.";
+        Locale locale = LocaleContextHolder.getLocale();
+
+        log.info("Seller Current locale :{} ", locale);
+
+        return messageSource.getMessage(
+                "register.msg.seller",
+                null,
+                locale
+        );
     }
 
     @Override
@@ -226,15 +250,14 @@ public class AuthServiceImpl implements  IAuthService {
         }
 
         user.setInvalidAttemptCount(0);
-        String token = jwtTokenProvider.generateToken(user);
-        user.setActiveToken(token);
-        userRepository.save(user);
-        return new LoginResponse(token, "Bearer", "Login Successful");
+        String accessToken = jwtTokenProvider.generateToken(user);
+        String refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        return new LoginResponse(accessToken, refreshToken, "Bearer", "Login Successful");
     }
 
     @Override
     public String logout(String tokenHeader) {
-        // Invalidate token logic can be implemented here (e.g., add to blacklist)
+
         if(tokenHeader == null || !tokenHeader.startsWith("Bearer")) {
             throw new RuntimeException("Invalid token");
         }
@@ -309,6 +332,19 @@ public class AuthServiceImpl implements  IAuthService {
         emailService.sendUpdatedPasswordConfirmationMail(user.getEmail());
 
         return "Password updated successfully";
+    }
+
+    @Override
+    public LoginResponse refreshToken(String refreshToken) {
+
+        return refreshTokenService.findByToken(refreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String newAccessToken = jwtTokenProvider.generateToken(user);
+                    return new LoginResponse(newAccessToken, refreshToken, "Bearer", "Token Refreshed Successfully");
+                })
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
     }
 
     public User getLoggedInUser() {

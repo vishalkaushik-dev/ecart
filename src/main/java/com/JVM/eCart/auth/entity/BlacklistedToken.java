@@ -1,9 +1,11 @@
 package com.JVM.eCart.auth.entity;
 
+import com.JVM.eCart.audit.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @Table(name = "blacklisted_token")
-public class BlacklistedToken {
+public class BlacklistedToken extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +26,8 @@ public class BlacklistedToken {
     @Column(nullable = false)
     private LocalDateTime expiryDate;
 
-    @Column(nullable = false)
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime blacklistedAt;
 
     // Constructors
@@ -35,6 +38,4 @@ public class BlacklistedToken {
         this.expiryDate = expiryDate;
         this.blacklistedAt = LocalDateTime.now();
     }
-
-    // Getters & Setters
 }
