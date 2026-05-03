@@ -358,6 +358,35 @@ public class OrderService {
         );
     }
 
+
+    @Transactional()
+    public String updateOrderStatusByAdmin(UpdateOrderStatusRequest request){
+
+        OrderProduct op = orderProductRepository.findById(request.orderProductId())
+                .orElseThrow(() -> new RuntimeException("Order product not found"));
+
+        if (!op.getCurrentStatus().equals(request.fromStatus())) {
+            throw new RuntimeException("Invalid current status");
+        }
+
+        if (!request.fromStatus().canTransitionTo(request.toStatus())) {
+            throw new RuntimeException("Transition not allowed");
+        }
+
+        op.setCurrentStatus(request.toStatus());
+        orderProductRepository.save(op);
+
+        OrderStatus history = new OrderStatus();
+        history.setOrderProduct(op);
+        history.setFromStatus(request.fromStatus());
+        history.setToStatus(request.toStatus());
+        history.setTransitionNotesComments(request.notes());
+        history.setTransitionDate(LocalDateTime.now());
+        orderStatusRepository.save(history);
+
+        return "Order status updated successfully";
+    }
+
     private OrderResponse mapToAdminOrderResponse(Order order) {
 
         List<SellerOrderItem> items = orderProductRepository

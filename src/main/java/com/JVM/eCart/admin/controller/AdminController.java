@@ -6,6 +6,7 @@ import com.JVM.eCart.admin.service.AdminService;
 import com.JVM.eCart.category.dto.*;
 import com.JVM.eCart.category.service.CategoryService;
 import com.JVM.eCart.order.dto.OrderResponse;
+import com.JVM.eCart.order.dto.UpdateOrderStatusRequest;
 import com.JVM.eCart.order.service.OrderService;
 import com.JVM.eCart.product.dto.PageResponse;
 import com.JVM.eCart.product.service.ProductService;
@@ -194,5 +195,10 @@ public class AdminController {
         Pageable pageable = PageRequest.of(offset, max, Sort.by(direction, sort));
 
         return orderService.viewAdminAllOrders(pageable, query);
+    }
+
+    @PatchMapping("/orders/update-status")
+    public  ResponseEntity<?> updateOrderStatus(@Valid @RequestBody UpdateOrderStatusRequest request){
+        return ResponseEntity.ok(orderService.updateOrderStatusByAdmin(request));
     }
 }
